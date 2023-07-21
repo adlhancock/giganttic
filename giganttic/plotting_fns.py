@@ -31,15 +31,15 @@ def setup_figure(df,
 
     if rows>60:
         plt.rcParams['font.size'] = 6
-        figuresize = [15,rows/3]
-        figuredpi = 70
+        figuresize = [15,rows/1.5]
+        figuredpi = 60
     elif rows>10:
         plt.rcParams['font.size'] = 8
         figuresize = [15,rows/3]
         figuredpi = 100
     else:
         plt.rcParams['font.size'] = 8
-        figuresize = [10,5]
+        figuresize = [15,rows]
         figuredpi = 100
 
     
@@ -164,6 +164,7 @@ def gantt_chart(df,
 
     # set the date range
     if dates is None: dates = (min(df.start[df.start.notna()]),max(df.end[df.end.notna()]))
+    if dates[0]==dates[1]: dates = [dt(2022,1,1),dt(2050,1,1)]
    
     # set up figure
     

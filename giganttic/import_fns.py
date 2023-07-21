@@ -8,6 +8,9 @@ Created on Fri May  5 08:27:58 2023
 """
 import csv
 import pandas as pd
+import numpy as np
+from tkinter import Tk
+from tkinter.filedialog import askopenfilename
 
 
 #%% data import functions
@@ -37,27 +40,31 @@ def import_csv(
         df = pd.DataFrame(events)
         df.columns = columns
 
-    df.start = pd.to_datetime(df.start,dayfirst=True)
-    df.end = pd.to_datetime(df.end,dayfirst=True)
+    if all(["start" in df.columns, "end" in df.columns]):
+        
+        df.start = pd.to_datetime(df.start,dayfirst=True)
+        df.end = pd.to_datetime(df.end,dayfirst=True)
+    else:
+        print("{}: WARNING - no start and end values defined".format(__name__))        
 
     return df
 
-def import_excel(file,**kwargs):
-    if "sheet" in kwargs.keys():
-        sheet = kwargs["sheet"]
-    else:
-        sheet = "Sheet1"
+def import_excel(file,sheet=0,**kwargs):
+
     df = pd.read_excel(file,sheet)
-    try:
+    
+    if all(["start" in df.columns, "end" in df.columns]):
         df.start = pd.to_datetime(df.start,dayfirst=True)
-    except:
-        pass
-    try:
         df.end = pd.to_datetime(df.end,dayfirst=True)
+    else:
+        print("{}: WARNING - no start and end values defined".format(__name__))   
+
+    '''    
+    try:
+        df['id'] = df['id'].astype(str)
     except:
-        pass 
-    df = df[df.start.notna()]
-    df = df[df.end.notna()].reset_index(drop=True)
+        df['id'] = df.index.astype(str)    
+    '''
     #df.columns = df.columns.str.lower()
     #print(df)
     return df
@@ -69,3 +76,12 @@ def import_list(data):
     df.end = pd.to_datetime(df.end,dayfirst=True)
     
     return df
+
+def choosefile(path = './'):
+    
+    dialogue = Tk()
+    dialogue.withdraw()
+    dialogue.wm_attributes('-topmost', 1)
+    filename = askopenfilename(parent=dialogue, initialdir=path)
+    
+    return filename
