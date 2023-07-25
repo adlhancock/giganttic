@@ -7,16 +7,17 @@ Created on Fri May  5 08:32:23 2023
 @author: dhancock
 """
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle
 #from matplotlib.patches import Shadow
 from matplotlib import colormaps
 from datetime import datetime as dt
-import numpy as np
+#import numpy as np
 
-
-
+#SUB-FUNCTIONS
+#%% Setup figure
 def setup_figure(df,
                  dates=None,
                  yvalues = None,
@@ -79,8 +80,14 @@ def setup_figure(df,
     plt.grid(linestyle="--",color="#cccccc",zorder=0)
 
     return ax,fig
-    
-def get_colors(index,df,fillcolumn,bordercolumn,cmap=colormaps['viridis'],**kwargs):
+
+#%% get colors    
+def get_colors(index,
+               df,
+               fillcolumn,
+               bordercolumn,
+               cmap = colormaps['viridis'],
+               **kwargs):
     
     default_fill = "#aaaaaa"
     default_border = None
@@ -103,6 +110,25 @@ def get_colors(index,df,fillcolumn,bordercolumn,cmap=colormaps['viridis'],**kwar
         
     return fillcolor, bordercolor
 
+#%% create legend
+
+def add_legend(df,fillcolumn,fig,cmap=colormaps['plasma'],discrete=False):
+    print("WARNING - this is WIP - YMMV")
+    fillvalues = df.loc[df[fillcolumn].notna(),fillcolumn]
+    print(fillvalues)
+        
+    if discrete is True:
+        bounds = fillvalues
+        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
+    else:
+        norm = mpl.colors.Normalize(min(fillvalues),max(fillvalues))
+    sc = mpl.cm.ScalarMappable(norm,cmap)
+    plt.colorbar(sc,orientation="horizontal")
+            
+    return 
+
+
+#%% plot event
 def plot_event(yvalue,
                event,
                fill_colour="#aaaaaa",
@@ -152,11 +178,12 @@ def plot_event(yvalue,
         shape.set_zorder(10)
     return shape
 
-
+#%% MAIN FUNCTION
+#%% gantt chart main function
 def gantt_chart(df,
-                title="Gantt Chart",
-                fillcolumn="id",
-                bordercolumn=None,
+                title = "Gantt Chart",
+                fillcolumn = "id",
+                bordercolumn = None,
                 customcolors = None,
                 yvalues = None,
                 dates = None,
@@ -164,13 +191,11 @@ def gantt_chart(df,
 
     # set the date range
     if dates is None: dates = (min(df.start[df.start.notna()]),max(df.end[df.end.notna()]))
-    if dates[0]==dates[1]: dates = [dt(2022,1,1),dt(2050,1,1)]
+    if dates[0] == dates[1]: dates = [dt(2022,1,1),dt(2050,1,1)]
    
     # set up figure
-    
     if yvalues is None: yvalues = [df.index.tolist(),df.name]
-    
-    ax,fig = setup_figure(df, title=title,yvalues=yvalues,dates=dates)
+    ax, fig = setup_figure(df, title=title,yvalues=yvalues,dates=dates)
 
     # iterate through events
     for row, event in df.iterrows():
@@ -180,7 +205,7 @@ def gantt_chart(df,
             fc, bc = get_colors(row, df, fillcolumn, bordercolumn,**kwargs)
         except:
             #print("can't find fill color for {} for {}".format(df.iloc[row],fillcolumn))
-            fc,bc = 'red',None
+            fc, bc = 'red',None
             
         # apply custom colors
         if customcolors is not None:
@@ -193,10 +218,8 @@ def gantt_chart(df,
 
             
         # create and plot shapes
-        #yvalue = np.where(df.id.unique()==event['id'])[0][0]
         yvalue = row
-        #print(row,event['name'])
-        shape = plot_event(yvalue,event,fill_colour=fc,border_colour=bc,ax=ax)
+        shape = plot_event(yvalue,event,fill_colour = fc,border_colour=bc,ax=ax)
         ax.add_patch(shape)
         
         #shadow = Shadow(shape,5,0.05,alpha=0.1)
@@ -205,3 +228,4 @@ def gantt_chart(df,
     plt.tight_layout()
 
     return ax,fig
+

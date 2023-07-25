@@ -11,6 +11,11 @@ import pandas as pd
 import numpy as np
 from datetime import datetime as dt
 
+def get_datestring():
+    timenow = dt.now()
+    
+    return timenow.strftime("%Y%m%d")
+
 
 #%% data modification
 
