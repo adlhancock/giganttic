@@ -89,6 +89,11 @@ def get_colors(index,
                cmap = colormaps['viridis'],
                **kwargs):
     
+    if 'border_cmap' in kwargs:
+        border_cmap = kwargs['border_cmap']
+    else:
+        border_cmap = cmap
+        
     default_fill = "#aaaaaa"
     default_border = None
     
@@ -103,7 +108,7 @@ def get_colors(index,
     if bordercolumn is not None:
         bordervalue = df.iloc[index][bordercolumn]
         bordervalues = df[bordercolumn].unique().tolist()
-        bordercolor = cmap(
+        bordercolor = border_cmap(
             bordervalues.index(bordervalue)/len(bordervalues))
     else:
         bordercolor = default_border
@@ -112,20 +117,6 @@ def get_colors(index,
 
 #%% create legend
 
-def add_legend(df,fillcolumn,fig,cmap=colormaps['plasma'],discrete=False):
-    print("WARNING - this is WIP - YMMV")
-    fillvalues = df.loc[df[fillcolumn].notna(),fillcolumn]
-    print(fillvalues)
-        
-    if discrete is True:
-        bounds = fillvalues
-        norm = mpl.colors.BoundaryNorm(bounds, cmap.N)
-    else:
-        norm = mpl.colors.Normalize(min(fillvalues),max(fillvalues))
-    sc = mpl.cm.ScalarMappable(norm,cmap)
-    plt.colorbar(sc,orientation="horizontal")
-            
-    return 
 
 
 #%% plot event
@@ -182,17 +173,21 @@ def plot_event(yvalue,
 #%% gantt chart main function
 def gantt_chart(df,
                 title = "Gantt Chart",
-                fillcolumn = "id",
+                fillcolumn = None,
                 bordercolumn = None,
                 customcolors = None,
                 yvalues = None,
                 dates = None,
+                legend = False,
                 **kwargs):
+
+    assert all([x in df.columns for x in ['name','start','end']]), 'dataframe must have "name", "start", and "end" columns as a minimum'
 
     # set the date range
     if dates is None: dates = (min(df.start[df.start.notna()]),max(df.end[df.end.notna()]))
     if dates[0] == dates[1]: dates = [dt(2022,1,1),dt(2050,1,1)]
    
+                
     # set up figure
     if yvalues is None: yvalues = [df.index.tolist(),df.name]
     ax, fig = setup_figure(df, title=title,yvalues=yvalues,dates=dates)
@@ -222,6 +217,50 @@ def gantt_chart(df,
         shape = plot_event(yvalue,event,fill_colour = fc,border_colour=bc,ax=ax)
         ax.add_patch(shape)
         
+        # create a legend
+        if legend is True:
+            if 'cmap' in kwargs: 
+                cmap = kwargs['cmap']
+            else:
+                cmap = colormaps['viridis']
+            if 'border_cmap' in kwargs:
+                border_cmap = kwargs['border_cmap']
+            else:
+                border_cmap = cmap
+            
+            patches = []
+            if fillcolumn is not None:
+                fill_title_patch = mpl.patches.Patch(
+                    color='white',label='{}:'.format(fillcolumn)
+                    )
+                patches.append(fill_title_patch)
+                fill_labels = df[fillcolumn].unique().tolist()
+                for n,i in enumerate(fill_labels):
+                    color = cmap(n/len(fill_labels))
+                    patch = mpl.patches.Patch(color=color,edgecolor=None,label=i)
+                    patches.append(patch)
+            if bordercolumn is not None:
+                border_title_patch = mpl.patches.Patch(
+                    color='white',label='{}:'.format(bordercolumn)
+                    )
+                patches.append(border_title_patch)
+                border_labels = df[bordercolumn].unique().tolist()
+                for n,i in enumerate(border_labels):
+                    color = border_cmap(n/len(border_labels))
+                    patch = mpl.patches.Patch(facecolor='white',edgecolor=color,label=i)
+                    patches.append(patch)
+            if customcolors is not None:
+                customcolors_title_patch=mpl.patches.Patch(
+                    color="white",label="custom colours:"
+                    )
+                patches.append(customcolors_title_patch)
+                for c in customcolors:
+                    patch = mpl.patches.Patch(color=customcolors[c],label=c)
+                    patches.append(patch)
+            if len(patches) != 0:
+                ax.legend(handles=patches)
+            else:
+                print("no legend items generated")
         #shadow = Shadow(shape,5,0.05,alpha=0.1)
         #ax.add_patch(shadow)
 
