@@ -7,17 +7,13 @@ Created on Fri May  5 08:27:58 2023
 @author: dhancock
 """
 
+import os
+import sys
 
+sys.path.insert(0,os.path.abspath('..'))
 
-from giganttic import giganttic 
+import giganttic as gt
 #import pandas as pd
-
-
-INPUTFILE = "../input/exampledata.csv"
-OUTPUTFILE = "../output/examplechart.png"
-TITLE = "Example Gantt Chart"
-#FILTER = ["name","T\d[^Aa]"]
-FILTER = ["name","task"]
 
 DUMMYDATA = [
     ["id","name","start","end","level"],
@@ -34,19 +30,22 @@ DUMMYDATA = [
     ]
 
 
-#%% CASE 1
-"""
-df1 = giganttic.import_csv(INPUTFILE)
-fig1 = giganttic.gantt_chart(df1,title=TITLE,fillcolumn="id")
-fig1.savefig(OUTPUTFILE)
+#%% CASE 1 - directly plot dummy data
+
+
+
+
+df1 = gt.import_csv('./exampledata1.csv')
+df1, fig1 = gt.gantt_chart(df1,title='Example 1',fillcolumn="id")
+fig1.savefig('exampledata1.png')
 fig1.show()
-"""
+
 
 #%% CASE 2
 
-#df2,fig2 = giganttic(INPUTFILE,OUTPUTFILE,TITLE)
+df2,fig2 = gt.giganttic('exampledata2.xlsx','exampledata2.png','Example 2')
 
 #%% CASE 3
-df3,fig3 = giganttic(DUMMYDATA,OUTPUTFILE,TITLE,filter=FILTER)
+df3,fig3 = gt.giganttic(DUMMYDATA,'exampledata3.png','Example 3')
 
 

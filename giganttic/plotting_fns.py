@@ -69,7 +69,12 @@ def setup_figure(df,
     except:
         dates = [dt.now(),dt(2050,1,1)]
         plt.xlim((mdates.date2num(d) for d in dates))
-    plt.ylim((rows,-1))
+        
+    if yvalues == None:
+        ylimits = (rows,-1)
+    else:
+        ylimits = (max(yvalues[0]),min(yvalues[0]))
+    plt.ylim(ylimits)
 
     # add a "now" line
     if nowline==True:
@@ -213,7 +218,8 @@ def gantt_chart(df,
 
             
         # create and plot shapes
-        yvalue = row
+        yvalue = yvalues[0][row]
+        
         shape = plot_event(yvalue,event,fill_colour = fc,border_colour=bc,ax=ax)
         ax.add_patch(shape)
         
@@ -231,7 +237,7 @@ def gantt_chart(df,
             patches = []
             if fillcolumn is not None:
                 fill_title_patch = mpl.patches.Patch(
-                    color='white',label='{}:'.format(fillcolumn)
+                    color='white',label='{}:'.format(fillcolumn).upper()
                     )
                 patches.append(fill_title_patch)
                 fill_labels = df[fillcolumn].unique().tolist()
@@ -241,7 +247,7 @@ def gantt_chart(df,
                     patches.append(patch)
             if bordercolumn is not None:
                 border_title_patch = mpl.patches.Patch(
-                    color='white',label='{}:'.format(bordercolumn)
+                    color='white',label='{}:'.format(bordercolumn).upper()
                     )
                 patches.append(border_title_patch)
                 border_labels = df[bordercolumn].unique().tolist()
@@ -251,7 +257,7 @@ def gantt_chart(df,
                     patches.append(patch)
             if customcolors is not None:
                 customcolors_title_patch=mpl.patches.Patch(
-                    color="white",label="custom colours:"
+                    color="white",label="custom colours:".upper()
                     )
                 patches.append(customcolors_title_patch)
                 for c in customcolors:

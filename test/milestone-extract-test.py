@@ -4,7 +4,14 @@ Created on Tue May  2 11:12:32 2023
 
 @author: dhancock
 """
+
+import os
+import sys
 import pandas as pd
+
+sys.path.insert(0,os.path.abspath('..'))
+
+
 import giganttic as gt
 
 testfile = './testdata.xlsx'
