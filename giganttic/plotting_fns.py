@@ -64,16 +64,15 @@ def setup_figure(df,
     ax.tick_params('y',length=0)
 
     # set x and y limits
-    try:
-        plt.xlim((mdates.date2num(d) for d in dates))
-    except:
+    if dates == None:
         dates = [dt.now(),dt(2050,1,1)]
-        plt.xlim((mdates.date2num(d) for d in dates))
-        
+    xlimits = (mdates.date2num(d) for d in dates)
+    plt.xlim(xlimits)        
+
     if yvalues == None:
         ylimits = (rows,-1)
     else:
-        ylimits = (max(yvalues[0]),min(yvalues[0]))
+        ylimits = (max(yvalues[0])+1,min(yvalues[0])-1)
     plt.ylim(ylimits)
 
     # add a "now" line
@@ -137,7 +136,7 @@ def plot_event(yvalue,
     width = end - start
     x = start
     y = yvalue
-    height = 0.8
+    height = 0.7
     anchor = (x,y-height/2)
     
     # plot as a zero length milestone
@@ -181,16 +180,20 @@ def gantt_chart(df,
                 fillcolumn = None,
                 bordercolumn = None,
                 customcolors = None,
+                customcolor_field = 'name',
                 yvalues = None,
                 dates = None,
                 legend = False,
+                tight = True,
                 **kwargs):
 
     assert all([x in df.columns for x in ['name','start','end']]), 'dataframe must have "name", "start", and "end" columns as a minimum'
 
     # set the date range
-    if dates is None: dates = (min(df.start[df.start.notna()]),max(df.end[df.end.notna()]))
-    if dates[0] == dates[1]: dates = [dt(2022,1,1),dt(2050,1,1)]
+    if dates is None: 
+        dates = (min(df.start[df.start.notna()]),max(df.end[df.end.notna()]))
+    if dates[0] == dates[1]: 
+        dates = [dt(2022,1,1),dt(2050,1,1)]
    
                 
     # set up figure
@@ -210,11 +213,9 @@ def gantt_chart(df,
         # apply custom colors
         if customcolors is not None:
             for item in customcolors:
-                #print(event)
-                #print(item,str(event.name))
-                if item in str(event['name']):
+                if item in str(event[customcolor_field]):
                     fc = customcolors[item]
-                    #print(item,event['name'],fc)
+
 
             
         # create and plot shapes
@@ -241,6 +242,7 @@ def gantt_chart(df,
                     )
                 patches.append(fill_title_patch)
                 fill_labels = df[fillcolumn].unique().tolist()
+                #fill_labels = df.loc[df[fillcolumn].notna(),fillcolumn].unique().tolist()  ##TEST
                 for n,i in enumerate(fill_labels):
                     color = cmap(n/len(fill_labels))
                     patch = mpl.patches.Patch(color=color,edgecolor=None,label=i)
@@ -257,7 +259,7 @@ def gantt_chart(df,
                     patches.append(patch)
             if customcolors is not None:
                 customcolors_title_patch=mpl.patches.Patch(
-                    color="white",label="custom colours:".upper()
+                    color="white",label="{}:".format(customcolor_field).upper()
                     )
                 patches.append(customcolors_title_patch)
                 for c in customcolors:
@@ -269,8 +271,8 @@ def gantt_chart(df,
                 print("no legend items generated")
         #shadow = Shadow(shape,5,0.05,alpha=0.1)
         #ax.add_patch(shadow)
-
-    plt.tight_layout()
+    if tight is True:
+        plt.tight_layout()
 
     return ax,fig
 
