@@ -56,6 +56,18 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
     df = df.sort_values('ordering').reset_index(drop=True)
     return df
 
+def flatten_milestones(df):
+    """ clear the milestone names and return values in the format 
+    [ylocs, ylabels] which offset them from the main task bar """
+    
+    df['label'] = df.name
+    df.loc[df['row_type'] == 'Milestone','label'] = ''
+    df.activity_id = df.activity_id.map(float) * 2
+    df.loc[df['row_type'] == 'Milestone','activity_id'] = df.activity_id + 0.7
+    ylocs = df.activity_id
+    yvalues = [ylocs,df.label.tolist()]
+    return yvalues
+
 def get_durations(df,milestone_cols):
     def startend(row,func):
         if list(row) == [pd.NaT]*5:

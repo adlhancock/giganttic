@@ -155,10 +155,10 @@ def plot_event(yvalue,
         
         # add a text label if possible
         try: 
-            plt.text(x,y,event.milestone)
+            mslabel = '  {}'.format(str(event.milestone))
         except:
-            plt.text(x,y,'??')
-            #pass
+            mslabel = '  {}'.format('??')
+        plt.text(x,y,mslabel)
 
     # plot as a bar
     else:
