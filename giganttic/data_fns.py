@@ -28,7 +28,7 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
     """ 
     this assumes the dataframe is a row of activities with columns for the milestone dates
     """
-    df = df.reindex()
+    #df = df.reindex()
     df['activity_id'] = df.index.map(lambda x: str(x).zfill(4))
     df['ordering'] = df.activity_id.str.zfill(4)
     df['row_type'] = 'Activity'
@@ -41,7 +41,7 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
                 #'name' : row['name'] + ' ({})'.format(ms),
                 'name' : '({})'.format(ms),
                 'activity_id': row['activity_id'],
-                'milestone_id': ms_id,
+                #'milestone_id': ms_id,
                 'ordering': row['activity_id'] + '.{}'.format(ms_id),
                 'start' : row[ms],
                 'end': row[ms],
@@ -57,15 +57,18 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
     return df
 
 def flatten_milestones(df):
-    """ clear the milestone names and return values in the format 
-    [ylocs, ylabels] which offset them from the main task bar """
+    """ 
+    Return values and labels in the format 
+    [yvalue, ylabel] which clears the milestone labels and puts them 
+    in a single line below the main task bar 
+    """
     
-    df['label'] = df.name
-    df.loc[df['row_type'] == 'Milestone','label'] = ''
-    df.activity_id = df.activity_id.map(float) * 2
-    df.loc[df['row_type'] == 'Milestone','activity_id'] = df.activity_id + 0.7
-    ylocs = df.activity_id
-    yvalues = [ylocs,df.label.tolist()]
+    df['ylabel'] = df.name
+    df.loc[df['row_type'] == 'Milestone','ylabel'] = ''
+    df['yvalue'] = df.activity_id.map(float) * 2
+    df.loc[df['row_type'] == 'Milestone','yvalue'] = df.yvalue + 0.7
+    #ylocs = df.activity_id
+    yvalues = [df.yvalue.tolist(),df.ylabel.tolist()]
     return yvalues
 
 def get_durations(df,milestone_cols):
