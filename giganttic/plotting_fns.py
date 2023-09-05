@@ -14,6 +14,7 @@ from matplotlib.patches import Rectangle
 #from matplotlib.patches import Shadow
 from matplotlib import colormaps
 from datetime import datetime as dt
+import pandas as pd
 #import numpy as np
 
 #SUB-FUNCTIONS
@@ -154,11 +155,12 @@ def plot_event(yvalue,
             height=0)
         
         # add a text label if possible
-        try: 
-            mslabel = '  {}'.format(str(event.milestone))
-        except:
-            mslabel = '  {}'.format('??')
-        plt.text(x,y,mslabel)
+        if pd.notna(event.milestone):
+            try: 
+                mslabel = '  {}'.format(str(event.milestone))
+            except:
+                mslabel = '  {}'.format('??')
+            plt.text(x,y,mslabel)
 
     # plot as a bar
     else:
@@ -197,12 +199,20 @@ def gantt_chart(df,
    
                 
     # set up figure
-    if yvalues is None: yvalues = [df.index.tolist(),df.name]
-    ax, fig = setup_figure(df, title=title,yvalues=yvalues,dates=dates)
+    if yvalues is None:
+        ylocs = list(range(len(df)))
+        ylabels = df.name
+        yvalues = [ylocs,ylabels]
+    else:
+        ylocs, ylabels = yvalues
+
+
+    ax, fig = setup_figure(df, title=title,yvalues=[ylocs,ylabels],dates=dates)
 
     # iterate through events
+    df = df.reset_index(drop=True)
     for row, event in df.iterrows():
-        
+    
         #get colors
         try:
             fc, bc = get_colors(row, df, fillcolumn, bordercolumn,**kwargs)
@@ -215,11 +225,9 @@ def gantt_chart(df,
             for item in customcolors:
                 if item in str(event[customcolor_field]):
                     fc = customcolors[item]
-
-
             
         # create and plot shapes
-        yvalue = yvalues[0][row]
+        yvalue = ylocs[row]
         
         shape = plot_event(yvalue,event,fill_colour = fc,border_colour=bc,ax=ax)
         ax.add_patch(shape)

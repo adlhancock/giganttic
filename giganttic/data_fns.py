@@ -59,7 +59,7 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
 def flatten_milestones(df):
     """ 
     Return values and labels in the format 
-    [yvalue, ylabel] which clears the milestone labels and puts them 
+    [yloc, ylabel] which clears the milestone labels and puts them 
     in a single line below the main task bar 
     """
     
