@@ -122,6 +122,20 @@ def get_colors(index,
 
 #%% create legend
 
+#%% add milestone labels
+def add_milestone_labels(df):
+    """ add milestone labels to the middle of any bars that are milestones (shrug) """
+    for row, event in df.iterrows():
+        if event.end != event.start:
+            xval = event.start + (event.end-event.start)/2
+            yval = row
+            plt.text(
+                xval,yval,
+                '{}'.format(str(event.milestone)),
+                zorder=20,
+                c='white',
+                va='center',
+                ha='center')
 
 
 #%% plot event
