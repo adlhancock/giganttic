@@ -198,8 +198,8 @@ def gantt_chart(df,
                 title = "Gantt Chart",
                 fillcolumn = None,
                 bordercolumn = None,
-                customcolors = None,
-                customcolor_field = 'name',
+                customcolours = None,
+                customcolour_field = 'name',
                 yvalues = None,
                 dates = None,
                 legend = False,
@@ -238,10 +238,10 @@ def gantt_chart(df,
             fc, bc = 'red',None
             
         # apply custom colors
-        if customcolors is not None:
-            for item in customcolors:
-                if item in str(event[customcolor_field]):
-                    fc = customcolors[item]
+        if customcolours is not None:
+            for item in customcolours:
+                if item in str(event[customcolour_field]):
+                    fc = customcolours[item]
             
         # create and plot shapes
         yvalue = ylocs[row]
@@ -282,13 +282,13 @@ def gantt_chart(df,
                     color = border_cmap(n/len(border_labels))
                     patch = mpl.patches.Patch(facecolor='white',edgecolor=color,label=i)
                     patches.append(patch)
-            if customcolors is not None:
-                customcolors_title_patch=mpl.patches.Patch(
-                    color="white",label="{}:".format(customcolor_field).upper()
+            if customcolours is not None:
+                customcolours_title_patch=mpl.patches.Patch(
+                    color="white",label="{}:".format(customcolour_field).upper()
                     )
-                patches.append(customcolors_title_patch)
-                for c in customcolors:
-                    patch = mpl.patches.Patch(color=customcolors[c],label=c)
+                patches.append(customcolours_title_patch)
+                for c in customcolours:
+                    patch = mpl.patches.Patch(color=customcolours[c],label=c)
                     patches.append(patch)
             if len(patches) != 0:
                 ax.legend(handles=patches)
