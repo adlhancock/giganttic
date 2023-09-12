@@ -169,12 +169,15 @@ def plot_event(yvalue,
             height=0)
         
         # add a text label if possible
-        if pd.notna(event.milestone):
-            try: 
-                mslabel = '  {}'.format(str(event.milestone))
-            except:
-                mslabel = '  {}'.format('??')
-            plt.text(x,y,mslabel)
+        try:
+            if pd.notna(event.milestone):
+                try: 
+                    mslabel = '  {}'.format(str(event.milestone))
+                except:
+                    mslabel = '  {}'.format('??')
+                plt.text(x,y,mslabel)
+        except:
+            pass
 
     # plot as a bar
     else:
