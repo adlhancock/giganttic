@@ -6,23 +6,19 @@ a matplotlib gantt chart tool using patches,
 specifically designed for large projects
 """
 
-import pandas as pd
-from datetime import datetime as dt
 import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-from matplotlib.patches import Rectangle
-from matplotlib.patches import Shadow
-from matplotlib import colormaps
-#import numpy as np
-import csv
-#import mpld3
+
+from giganttic.import_fns import import_list, import_csv, import_excel
+from giganttic.data_fns import filter_data
+from giganttic.plotting_fns import gantt_chart
 
 
 #%% all in one function
 
 def giganttic(inputfile,outputfile,title,filter=None,**kwargs):
-    ''' all in one giganttic fn
-    '''
+    """
+    all in one giganttic fn
+    """
     
     # import the data
     if type(inputfile) is list:
@@ -39,7 +35,7 @@ def giganttic(inputfile,outputfile,title,filter=None,**kwargs):
         df = filter_data(df,filter[0],filter[1])
         
     # plot the gantt chart
-    fig = gantt_chart(df,title=title,**kwargs)
+    ax, fig = gantt_chart(df,title=title,**kwargs)
     fig.show()
     
     # save the figure

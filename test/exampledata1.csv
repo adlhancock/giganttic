@@ -1,23 +1,23 @@
-id,name,start,end,level
-1,One Work Breakdown Area Testing,01/05/2024,12/12/2028,1
-2,A test programme,01/05/2024,01/04/2028,2
-3,A test programme (T0),01/05/2024,01/05/2024,3
-4,A test programme (T1),01/04/2026,01/04/2026,3
-5,A test programme (T3),01/04/2027,01/04/2027,3
-6,A test programme (T4),01/04/2028,01/04/2028,3
-7,B test programme,01/04/2025,12/12/2028,2
-8,B test programme (T0),01/04/2025,01/04/2025,3
-9,B test programme (T1),01/04/2026,01/04/2026,3
-10,B test programme (T3),01/04/2027,01/04/2027,3
-11,B test programme (T4),12/12/2028,12/12/2028,3
-12,Another Work Breakdown Area Testing,01/05/2023,01/04/2028,1
-13,C test programme,01/05/2023,01/04/2026,2
-14,C test programme (T0),01/05/2023,01/05/2023,3
-15,C test programme (T1),01/04/2024,01/04/2024,3
-16,C test programme (T3),01/04/2025,01/04/2025,3
-17,C test programme (T4),01/04/2026,01/04/2026,3
-18,D test programme,01/04/2026,01/04/2028,2
-19,D test programme (T0),01/04/2026,01/04/2026,3
-20,D test programme (T1),01/04/2027,01/04/2027,3
-21,D test programme (T3),01/12/2027,01/12/2027,3
-22,D test programme (T4),01/04/2028,01/04/2028,3
+id,name,start,end,level,predecessors
+1,One Work Breakdown Area Testing,01/05/2024,12/12/2028,1,
+2,A test programme,01/05/2024,01/04/2028,2,
+3,A test programme (T0),01/05/2024,01/05/2024,3,
+4,A test programme (T1),01/04/2026,01/04/2026,3,3
+5,A test programme (T3),01/04/2027,01/04/2027,3,"4,3"
+6,A test programme (T4),01/04/2028,01/04/2028,3,5
+7,B test programme,01/04/2025,12/12/2028,2,"2,15"
+8,B test programme (T0),01/04/2025,01/04/2025,3,
+9,B test programme (T1),01/04/2026,01/04/2026,3,8
+10,B test programme (T3),01/04/2027,01/04/2027,3,9
+11,B test programme (T4),12/12/2028,12/12/2028,3,10
+12,Another Work Breakdown Area Testing,01/05/2023,01/04/2028,1,
+13,C test programme,01/05/2023,01/04/2026,2,
+14,C test programme (T0),01/05/2023,01/05/2023,3,
+15,C test programme (T1),01/04/2024,01/04/2024,3,14
+16,C test programme (T3),01/04/2025,01/04/2025,3,15
+17,C test programme (T4),01/04/2026,01/04/2026,3,16
+18,D test programme,01/04/2026,01/04/2028,2,13
+19,D test programme (T0),01/04/2026,01/04/2026,3,
+20,D test programme (T1),01/04/2027,01/04/2027,3,19
+21,D test programme (T3),01/12/2027,01/12/2027,3,20
+22,D test programme (T4),01/04/2028,01/04/2028,3,21

@@ -82,7 +82,7 @@ def setup_figure(df,
         ys = [rows+1,-1]
         ax.plot(xs,ys,'r--')
 
-    plt.grid(linestyle="--",color="#cccccc",zorder=0)
+    plt.grid(linestyle="--",color="#eeeeee",zorder=0)
 
     return ax,fig
 
@@ -92,6 +92,8 @@ def get_colors(index,
                fillcolumn,
                bordercolumn,
                cmap = colormaps['viridis'],
+               default_fill = "#aaaaaa",
+               default_border = None,
                **kwargs):
     
     if 'border_cmap' in kwargs:
@@ -99,8 +101,7 @@ def get_colors(index,
     else:
         border_cmap = cmap
         
-    default_fill = "#aaaaaa"
-    default_border = None
+    
     
     if fillcolumn is not None:
         fillvalue = df.iloc[index][fillcolumn]
@@ -119,8 +120,6 @@ def get_colors(index,
         bordercolor = default_border
         
     return fillcolor, bordercolor
-
-#%% create legend
 
 #%% add milestone labels
 def add_milestone_labels(df):
@@ -192,6 +191,49 @@ def plot_event(yvalue,
         shape.set_zorder(10)
     return shape
 
+def plot_connections(df,ax,line_colour="grey", **kwargs):
+    assert 'predecessors' in df.columns, 'no predecessors defined in dataframe'
+    for row, event in df.loc[df.predecessors.notna()].iterrows():
+        x_end = mdates.date2num(event.start)
+        y_end = event.yloc
+
+        predecessors = [str(i).strip() for i in str(event.predecessors).split(',')]
+        for predecessor in predecessors:
+            #print(predecessor,type(predecessor))
+            if predecessor in df.id:
+                p = df[df.id.map(str) == predecessor]
+                x_start = mdates.date2num(p.end)
+                y_start = p.yloc
+                #print(x_start,y_start)
+                if x_end < x_start:
+                    lc = 'red'
+                    ls = ':'
+                else:
+                    lc = line_colour
+                    ls = '-'
+                if x_end == x_start:
+                    cs = "arc3,rad=0"
+                else:
+                    cs = "angle,angleA=-90,angleB=180,rad=8"
+                ax.annotate("",
+                            xy = [x_end,y_end], xycoords = 'data',
+                            xytext = [x_start,y_start], textcoords = 'data',
+                            arrowprops = dict(
+                                arrowstyle = '->',
+                                linestyle = ls,
+                                color = lc,
+                                shrinkA = 8,
+                                shrinkB = 8,
+                                connectionstyle = cs
+                                ),
+                            zorder = 100
+                            )
+            else:
+                #print('id {} not found for drawing connection'.format(predecessor))
+                pass
+    
+    return df, ax
+
 #%% MAIN FUNCTION
 #%% gantt chart main function
 def gantt_chart(df,
@@ -203,6 +245,7 @@ def gantt_chart(df,
                 yvalues = None,
                 dates = None,
                 legend = False,
+                connections = False,
                 tight = True,
                 **kwargs):
 
@@ -220,21 +263,23 @@ def gantt_chart(df,
         ylocs = list(range(len(df)))
         ylabels = df.name
         yvalues = [ylocs,ylabels]
+
     else:
         ylocs, ylabels = yvalues
-
+    
+    df['yloc'] = ylocs
 
     ax, fig = setup_figure(df, title=title,yvalues=[ylocs,ylabels],dates=dates)
 
     # iterate through events
     df = df.reset_index(drop=True)
     for row, event in df.iterrows():
-    
+            
         #get colors
         try:
             fc, bc = get_colors(row, df, fillcolumn, bordercolumn,**kwargs)
         except:
-            #print("can't find fill color for {} for {}".format(df.iloc[row],fillcolumn))
+            print("can't find fill color for {} for {}".format(df.iloc[row],fillcolumn))
             fc, bc = 'red',None
             
         # apply custom colors
@@ -248,54 +293,61 @@ def gantt_chart(df,
         
         shape = plot_event(yvalue,event,fill_colour = fc,border_colour=bc,ax=ax)
         ax.add_patch(shape)
-        
-        # create a legend
-        if legend is True:
-            if 'cmap' in kwargs: 
-                cmap = kwargs['cmap']
-            else:
-                cmap = colormaps['viridis']
-            if 'border_cmap' in kwargs:
-                border_cmap = kwargs['border_cmap']
-            else:
-                border_cmap = cmap
+    
+    if connections is True:
+        try:
+            plot_connections(df,ax,**kwargs)
+        except:
             
-            patches = []
-            if fillcolumn is not None:
-                fill_title_patch = mpl.patches.Patch(
-                    color='white',label='{}:'.format(fillcolumn).upper()
-                    )
-                patches.append(fill_title_patch)
-                fill_labels = df[fillcolumn].unique().tolist()
-                #fill_labels = df.loc[df[fillcolumn].notna(),fillcolumn].unique().tolist()  ##TEST
-                for n,i in enumerate(fill_labels):
-                    color = cmap(n/len(fill_labels))
-                    patch = mpl.patches.Patch(color=color,edgecolor=None,label=i)
-                    patches.append(patch)
-            if bordercolumn is not None:
-                border_title_patch = mpl.patches.Patch(
-                    color='white',label='{}:'.format(bordercolumn).upper()
-                    )
-                patches.append(border_title_patch)
-                border_labels = df[bordercolumn].unique().tolist()
-                for n,i in enumerate(border_labels):
-                    color = border_cmap(n/len(border_labels))
-                    patch = mpl.patches.Patch(facecolor='white',edgecolor=color,label=i)
-                    patches.append(patch)
-            if customcolours is not None:
-                customcolours_title_patch=mpl.patches.Patch(
-                    color="white",label="{}:".format(customcolour_field).upper()
-                    )
-                patches.append(customcolours_title_patch)
-                for c in customcolours:
-                    patch = mpl.patches.Patch(color=customcolours[c],label=c)
-                    patches.append(patch)
-            if len(patches) != 0:
-                ax.legend(handles=patches)
-            else:
-                print("no legend items generated")
-        #shadow = Shadow(shape,5,0.05,alpha=0.1)
-        #ax.add_patch(shadow)
+            print('could not add connections')
+            raise
+        
+    # create a legend
+    if legend is True:
+        if 'cmap' in kwargs: 
+            cmap = kwargs['cmap']
+        else:
+            cmap = colormaps['viridis']
+        if 'border_cmap' in kwargs:
+            border_cmap = kwargs['border_cmap']
+        else:
+            border_cmap = cmap
+        
+        patches = []
+        if fillcolumn is not None:
+            fill_title_patch = mpl.patches.Patch(
+                color='white',label='{}:'.format(fillcolumn).upper()
+                )
+            patches.append(fill_title_patch)
+            fill_labels = df[fillcolumn].unique().tolist()
+            #fill_labels = df.loc[df[fillcolumn].notna(),fillcolumn].unique().tolist()  ##TEST
+            for n,i in enumerate(fill_labels):
+                color = cmap(n/len(fill_labels))
+                patch = mpl.patches.Patch(color=color,edgecolor=None,label=i)
+                patches.append(patch)
+        if bordercolumn is not None:
+            border_title_patch = mpl.patches.Patch(
+                color='white',label='{}:'.format(bordercolumn).upper()
+                )
+            patches.append(border_title_patch)
+            border_labels = df[bordercolumn].unique().tolist()
+            for n,i in enumerate(border_labels):
+                color = border_cmap(n/len(border_labels))
+                patch = mpl.patches.Patch(facecolor='white',edgecolor=color,label=i)
+                patches.append(patch)
+        if customcolours is not None:
+            customcolours_title_patch=mpl.patches.Patch(
+                color="white",label="{}:".format(customcolour_field).upper()
+                )
+            patches.append(customcolours_title_patch)
+            for c in customcolours:
+                patch = mpl.patches.Patch(color=customcolours[c],label=c)
+                patches.append(patch)
+        if len(patches) != 0:
+            ax.legend(handles=patches)
+        else:
+            print("no legend items generated")
+
     if tight is True:
         plt.tight_layout()
 
