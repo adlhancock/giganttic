@@ -8,7 +8,7 @@ Created on Fri May  5 08:30:31 2023
 """
 
 import pandas as pd
-import numpy as np
+#import numpy as np
 from datetime import datetime as dt
 
 def get_datestring():
@@ -21,7 +21,7 @@ def get_datestring():
 
 def filter_data(df,column,regex):
     df = df[df[column].str.contains(
-                regex, regex=True)].reset_index(drop=True)
+                regex, regex=True,na=False)].reset_index(drop=True)
     return df
 
 def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1','R2','R3','R4']):
