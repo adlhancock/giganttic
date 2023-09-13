@@ -68,8 +68,8 @@ def flatten_milestones(df):
     df['yvalue'] = df.activity_id.map(float) * 2
     df.loc[df['row_type'] == 'Milestone','yvalue'] = df.yvalue + 0.7
     #ylocs = df.activity_id
-    yvalues = [df.yvalue.tolist(),df.ylabel.tolist()]
-    return yvalues
+    # yvalues = [df.yvalue.tolist(),df.ylabel.tolist()]
+    return df
 
 def get_durations(df,milestone_cols):
     def startend(row,func):

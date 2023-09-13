@@ -19,15 +19,24 @@ import giganttic as gt
 #%% CASE 1 - import, plot and save separately.
 def case_1():
     df = gt.import_csv('./exampledata1.csv')
-    ax, fig = gt.gantt_chart(df,title='Example 1',fillcolumn="id",connections=True)
-    fig.savefig('exampledata1.png')
+
+    ax, fig = gt.gantt_chart(df, 
+                             title='Example 1',
+                             fillcolumn="id",
+                             connections=True,
+                             nowline = True)
+    #fig.savefig('exampledata1.png')
     fig.show()
     
     return df, ax, fig
 
 #%% CASE 2 all in one with an excel file
 def case_2():
-    return gt.giganttic('exampledata2.xlsx','exampledata2.png','Example 2', connections = False)
+    return gt.giganttic('exampledata2.xlsx',
+                        'exampledata2.png',
+                        'Example 2', 
+                        connections = False,
+                        nowline = False)
 
 #%% CASE 3 all in one with a list
 def case_3():

@@ -9,6 +9,7 @@ Created on Fri May  5 08:27:58 2023
 import csv
 import pandas as pd
 import numpy as np
+import xmltodict
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
@@ -76,6 +77,39 @@ def import_list(data):
     df.end = pd.to_datetime(df.end,dayfirst=True)
     
     return df
+
+def import_mpp_xml(filename):
+    
+    with open(filename,'r') as f:
+        xml = xmltodict.parse(f.read())
+        
+    df_all = pd.DataFrame(xml['Project']['Tasks']['Task'])
+    
+    
+    df_all['predecessors'] = df_all.loc[df_all.PredecessorLink.map(
+        lambda x: isinstance(x,dict)),'PredecessorLink'].map(lambda x: x['PredecessorUID'])
+    
+    df_all.loc[df_all.predecessors.isna(),'predecessors'] = df_all.loc[df_all.PredecessorLink.map(
+        lambda x: isinstance(x,list)),'PredecessorLink'].map(
+            lambda x: ','.join([i['PredecessorUID'] for i in x]))
+    
+    df = df_all[['UID','WBS','Name','Start','Finish','predecessors']].copy()
+    
+    datefmt = '%Y-%m-%dT%H:%M:%S'
+    
+    df.Start = pd.to_datetime(df.Start,format=datefmt)
+    df.Finish = pd.to_datetime(df.Finish,format=datefmt)
+    
+    df = df.rename(columns=dict(
+        UID = 'id',
+        Name = 'name',
+        Start = 'start',
+        Finish = 'end')
+        )
+    
+    df.name = df.WBS+' '+df.name
+    return df
+
 
 def choosefile(path = './'):
     
