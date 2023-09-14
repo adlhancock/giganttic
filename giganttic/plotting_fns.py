@@ -11,6 +11,7 @@ from matplotlib import colors, colormaps
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle, Patch
+from itertools import cycle
 
 from datetime import datetime as dt
 import pandas as pd
@@ -119,21 +120,20 @@ def setup_figure(df,
     return ax,fig
 
 #%% get colors    
-def get_colors(event,
-               df,
+def get_colors(df,
                fillcolumn,
                bordercolumn,
                cmap = colormaps['viridis'],
+               cmap_border = colormaps['tab10'],
                default_fill = "#002F56",
                default_border = None,
                **kwargs):
     """
-    gets colours for a shape
+    gets colours for the dataframe
     
     Parameters
     ----------
-    index
-        the index of the row.
+
     df
         dataframe
     fillcolumn
@@ -155,36 +155,60 @@ def get_colors(event,
     
     bordercolour
     
-    """
-    if isinstance(cmap, list):
-        cmap = colors.LinearSegmentedColormap.from_list('cmap', cmap)
+    df
     
-    if 'cmap_border' in kwargs:
-        cmap_border = kwargs['cmap_border']
-        
+    cmaps: dict
+        keys are 'fill' and 'border'
+    
+    """
+    # set the colourmaps
+    if isinstance(cmap, list):
+        cmap = colors.ListedColormap(cmap,'cmap')
+    
+    if cmap_border is not None:
+        if isinstance(cmap_border, list):
+           cmap_border = colors.ListedColormap(cmap_border,'cmap_border')
     else:
         cmap_border = cmap
-        if isinstance(cmap_border, list):
-           cmap_border = colors.LinearSegmentedColormap.from_list('cmap', cmap_border)
-    
+
+    df['fillcolour'] = None
+    df['bordercolour'] = None
+    #set the fill colour    
     if fillcolumn is not None:
-        #fillvalue = df.iloc[index][fillcolumn]
-        fillvalue = event[fillcolumn]
-        fillvalues = df[fillcolumn].unique().tolist()
-        fillcolor = cmap(
-            fillvalues.index(fillvalue)/len(fillvalues))
-    else:
-        fillcolor = default_fill
-    if bordercolumn is not None:
-        #bordervalue = df.iloc[index][bordercolumn]
-        bordervalue = event[bordercolumn]
-        bordervalues = df[bordercolumn].unique().tolist()
-        bordercolor = cmap_border(
-            bordervalues.index(bordervalue)/len(bordervalues))
-    else:
-        bordercolor = default_border
         
-    return fillcolor, bordercolor
+        #fillvalue = event[fillcolumn]
+        fillvalues = df[fillcolumn].unique().tolist()
+        if len(fillvalues) < len(cmap.colors)*0.5 or len(cmap.colors) > 30:
+            #fillcolor = cmap(fillvalues.index(fillvalue)/len(fillvalues))
+            df.fillcolour = df[fillcolumn].map(
+                lambda x: cmap(fillvalues.index(x)/len(fillvalues)))
+        else:
+            iterator = cycle(cmap.colors)
+            fillcolours = [next(iterator) for x in range(len(fillvalues))]
+            #fillcolor = fillcolours[fillvalues.index(fillvalue)]
+            df.fillcolour = df[fillcolumn].map(
+                lambda x: fillcolours[fillvalues.index(x)])
+    else:
+        df.fillcolour = default_fill
+    
+
+
+
+    #set the border colour
+    if bordercolumn is not None:
+        bordervalues = df[bordercolumn].unique().tolist()
+        df.bordercolour = df[bordercolumn].map( 
+            lambda x: cmap_border(bordervalues.index(x)/len(bordervalues)))
+    else:
+        df.bordercolor = default_border
+        
+    
+    #df['bordercolour'] = df[bordercolumn].map(lambda x: allcolours[bordervalues.index(x)])
+    cmaps = dict(
+        fill = cmap,
+        border = cmap_border)
+    
+    return df, cmaps
 
 #%% add milestone labels
 def add_milestone_labels(df):
@@ -371,6 +395,114 @@ def plot_connections(df,
     
     return df, ax
 
+#%% 
+def create_legend(ax,
+                  fig,
+                  df,
+                  cmaps,
+                  fillcolumn = None,
+                  bordercolumn = None,
+                  customcolours = None,
+                  customcolour_field = None,
+                  **kwargs
+                  ):
+    
+    """
+    add a legend
+    
+    Parameters
+    ----------
+    ax: matplotlib.axes._axes.Axes
+    
+    fig: matplotlib.figure.Figure
+    
+    df: pandas.DataFrame
+    
+    legend_sections: list, optional
+        Default is ['fill','border','customcolours']
+    
+    **kwargs
+    
+    
+    Returns
+    -------
+    
+    ax:
+    
+    fig:
+    
+    """
+    
+    cmap = cmaps['fill']
+    if 'border' in cmaps:
+        cmap_border = cmaps['border']
+    else:
+        cmap_border = None
+        
+    '''    
+    if isinstance(cmap, list):
+        cmap = colors.ListedColormap(cmap,'cmap')
+    
+    if cmap_border is not None:
+        if isinstance(cmap_border, list):
+           cmap_border = colors.ListedColormap(cmap_border,'cmap_border')
+    else:
+        cmap_border = cmap
+    '''
+    
+    # choose which bits of the legend to include
+    if 'legend_sections' in kwargs:
+        legend_sections = kwargs['legend_sections']
+    else:
+        legend_sections = ['fill','border','customcolours']
+    
+    patches = []
+    # draw the fill column section of the legend
+    if fillcolumn is not None and 'fill' in legend_sections:
+        fill_title_patch = Patch(
+            color='white',label='{}:'.format(fillcolumn).upper()
+            )
+        patches.append(fill_title_patch)
+        fill_labels = df[fillcolumn].unique().tolist()
+        #fill_labels = df.loc[df[fillcolumn].notna(),fillcolumn].unique().tolist()  ##TEST
+        for n,i in enumerate(fill_labels):
+            color = cmap(n/len(fill_labels))
+            patch = Patch(color=color,edgecolor=None,label=i)
+            patches.append(patch)
+    
+    # draw the border colour section of the legend        
+    if bordercolumn is not None and 'border' in legend_sections:
+        border_title_patch = Patch(
+            color='white',label='{}:'.format(bordercolumn).upper()
+            )
+        patches.append(border_title_patch)
+        border_labels = df[bordercolumn].unique().tolist()
+        for n,i in enumerate(border_labels):
+            color = cmap_border(n/len(border_labels))
+            patch = Patch(facecolor='white',edgecolor=color,label=i)
+            patches.append(patch)
+    
+    # draw the custom colours section of the legend        
+    if customcolours is not None and 'customcolours' in legend_sections:
+        if 'customcolour_legend_title' in kwargs:
+            customcolour_legend_title = kwargs['customcolour_legend_title']
+        else:
+            customcolour_legend_title = customcolour_field
+        customcolours_title_patch = Patch(
+            color="white",label="{}:".format(customcolour_legend_title).upper()
+            )
+        patches.append(customcolours_title_patch)
+        for c in customcolours:
+            patch = Patch(color=customcolours[c],label=c)
+            patches.append(patch)
+            
+    if len(patches) != 0:
+        ax.legend(handles=patches)
+    else:
+        print("no legend items generated")
+    return
+
+
 #%% gantt chart main function
 def gantt_chart(df,
                 title = "Gantt Chart",
@@ -464,28 +596,30 @@ def gantt_chart(df,
                            title=title, 
                            **kwargs)
 
-    # iterate through events
+    # get the colours
+    df, cmaps = get_colors(df, fillcolumn, bordercolumn, **kwargs)
+    
+    # reset the index 
     df = df.reset_index(drop=True)
+    
+    # iterate through events
     for row, event in df.iterrows():
-            
-        #get colors
-        try:
-            #fc, bc = get_colors(row, df, fillcolumn, bordercolumn,**kwargs)
-            fc, bc = get_colors(event, df, fillcolumn, bordercolumn,**kwargs)
-        except:
-            print("can't find fill color for {} for {}".format(df.iloc[row],fillcolumn))
-            fc, bc = 'red',None
-            
+
         # apply custom colors
         if customcolours is not None:
             for item in customcolours:
                 if item in str(event[customcolour_field]):
-                    fc = customcolours[item]
+                    event.fillcolour = customcolours[item]
             
         # create and plot shapes
         yvalue = ylocs[row]
         
-        shape = plot_event(yvalue,event,fill_colour = fc,border_colour=bc,ax=ax)
+        # create and add the shape
+        shape = plot_event(yvalue, 
+                           event,
+                           fill_colour = event.fillcolour,
+                           border_colour = event.bordercolour, 
+                           ax=ax)
         ax.add_patch(shape)
     
     # add a "now" line
@@ -495,105 +629,20 @@ def gantt_chart(df,
         ax.plot(xs,ys,color = nowline_colour, linestyle='--')
     
     # add connection arrows
-    if connections is True:
+    if connections is True and 'predecessors' in df.columns:
         try:
             plot_connections(df,ax,**kwargs)
         except:
-            
             print('could not add connections')
-            raise
+            #raise
         
-    # create a legend
-    def create_legend(ax,
-                      fig,
-                      df,
-                      **kwargs):
-        
-        """
-        add a legend
-        
-        Parameters
-        ----------
-        ax: matplotlib.axes._axes.Axes
-        
-        fig: matplotlib.figure.Figure
-        
-        df: pandas.DataFrame
-        
-        legend_sections: list, optional
-            Default is ['fill','border','customcolours']
-        
-        **kwargs
-        
-        
-        Returns
-        -------
-        
-        ax:
-        
-        fig:
-        
-        """
-        
-        if 'cmap' in kwargs: 
-            cmap = kwargs['cmap']
-        else:
-            cmap = colormaps['viridis']
-        if 'cmap_border' in kwargs:
-            cmap_border = kwargs['cmap_border']
-        else:
-            cmap_border = cmap
-            
-        if 'legend_sections' in kwargs:
-            legend_sections = kwargs['legend_sections']
-        else:
-            legend_sections = ['fill','border','customcolours']
-        
-        patches = []
-        if fillcolumn is not None and 'fill' in legend_sections:
-            fill_title_patch = Patch(
-                color='white',label='{}:'.format(fillcolumn).upper()
-                )
-            patches.append(fill_title_patch)
-            fill_labels = df[fillcolumn].unique().tolist()
-            #fill_labels = df.loc[df[fillcolumn].notna(),fillcolumn].unique().tolist()  ##TEST
-            for n,i in enumerate(fill_labels):
-                color = cmap(n/len(fill_labels))
-                patch = Patch(color=color,edgecolor=None,label=i)
-                patches.append(patch)
-                
-        if bordercolumn is not None and 'border' in legend_sections:
-            border_title_patch = Patch(
-                color='white',label='{}:'.format(bordercolumn).upper()
-                )
-            patches.append(border_title_patch)
-            border_labels = df[bordercolumn].unique().tolist()
-            for n,i in enumerate(border_labels):
-                color = cmap_border(n/len(border_labels))
-                patch = Patch(facecolor='white',edgecolor=color,label=i)
-                patches.append(patch)
-                
-        if customcolours is not None and 'customcolours' in legend_sections:
-            if 'customcolour_legend_title' in kwargs:
-                customcolour_legend_title = kwargs['customcolour_legend_title']
-            else:
-                customcolour_legend_title = customcolour_field
-            customcolours_title_patch = Patch(
-                color="white",label="{}:".format(customcolour_legend_title).upper()
-                )
-            patches.append(customcolours_title_patch)
-            for c in customcolours:
-                patch = Patch(color=customcolours[c],label=c)
-                patches.append(patch)
-                
-        if len(patches) != 0:
-            ax.legend(handles=patches)
-        else:
-            print("no legend items generated")
-        return
-    
+    # add a legend
     if legend is True:
-        create_legend(ax, fig, df, **kwargs)
+        create_legend(ax,fig,df,
+                      cmaps,
+                      fillcolumn,bordercolumn,
+                      customcolours,customcolour_field,
+                      **kwargs)
 
     # set tight layout, if requested
     if tight is True:

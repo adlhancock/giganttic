@@ -17,37 +17,42 @@ sys.path.insert(0,os.path.abspath('..'))
 import giganttic as gt
 
 
-#%% 
+#%% CASES
 def case_1():
     """
     CASE 1 - import, plot and save separately.
     """
+    
 
     df = gt.import_csv('./exampledata1.csv')
 
     ax, fig = gt.gantt_chart(df, 
                              title='Example 1',
                              fillcolumn="id",
+                             cmap = colormaps['tab10'],
                              connections=True,
                              nowline = True)
     fig.savefig('case_1.png')
     fig.show()
     
-    return df, ax, fig
+    out = df,ax,fig
+    return out
 
-#%% CASE 2 all in one with an excel file
 def case_2():
     """
     CASE 2 all in one with an excel file
     """
-
-    return gt.giganttic('exampledata2.xlsx',
+    out = gt.giganttic('exampledata2.xlsx',
                         'case_2.png',
                         'Example 2', 
+                        default_fill = '#cccccc',
+                        cmap_border = colormaps['viridis'],
+                        bordercolumn = 'id',
                         connections = False,
+                        legend = True,
                         nowline = False)
+    return out 
 
-#%% CASE 3 all in one with a list
 def case_3():
     """
     CASE 3 all in one with a list
@@ -66,14 +71,56 @@ def case_3():
         [9,"D","01/01/2027","12/12/2028",3],
         [10,"F","01/01/2027","12/12/2030",2],
         ]
-    
-    return gt.giganttic(DUMMYDATA,'case_3.png','Example 3', connections = False,default_fill='pink')
+    out = gt.giganttic(DUMMYDATA,'case_3.png','Example 3', connections = False,default_fill='pink')
+    return out
 
+def case_4(): 
+    """ 
+    CASE 4: manual file picking with a custom colourmap
+    """
+    out = gt.giganttic(
+        cmap=['#F6D44D','#006F45','#0082CA','#C9252C','#002F56','#58585B'],
+        fillcolumn='id')
+    return out 
+
+def case_5():
+    """ 
+    CASE 5: cycling colour map from list
+    """
+    dummydata = [
+            ["id","name","start","end","level"],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            [1,"task","31-Jan-2023","12/12/2028",1],
+            ]
+    df = gt.import_list(dummydata)
+    df.id = range(len(df))
+    df.loc[:,'name'] = df.id.map(str)+' - '+df.name
+    ax, fig = gt.gantt_chart(df,
+                             fillcolumn='id',
+                             cmap=['#F6D44D', 
+                                   '#006F45', 
+                                   '#0082CA', 
+                                   '#C9252C', 
+                                   '#002F56', 
+                                   '#58585B'])
+    
+    return df, ax, fig
+    
 
 #%% MAIN
 pyplot.close('all')
-case_1()
-case_2()
-case_3()
-gt.giganttic(cmap=['#F6D44D','#006F45','#0082CA','#C9252C','#002F56','#58585B'],
-             fillcolumn='id')
+out_1 = case_1()
+out_2 = case_2()
+out_3 = case_3()
+out_4 = case_4()
+out_5 = case_5()
+
