@@ -8,7 +8,7 @@ Created on Fri May  5 08:27:58 2023
 """
 import csv
 import pandas as pd
-import numpy as np
+#import numpy as np
 import xmltodict
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
@@ -19,7 +19,8 @@ from tkinter.filedialog import askopenfilename
 def import_csv(
     file,
     headers = True, 
-    columns=["id","name","start","end","level"]
+    columns=["id","name","start","end","level"],
+    **kwargs
     ):
     '''
     headers: if the first line of the csv file has headers
@@ -51,6 +52,23 @@ def import_csv(
     return df
 
 def import_excel(file,sheet=0,**kwargs):
+    """
+    import an excel file, defaulting to the first worksheet
+
+    Parameters
+    ----------
+    file : str
+        
+    sheet : str, optional
+        The default is 0.
+    **kwargs : 
+        
+
+    Returns
+    -------
+    df: pandas.DataFrame
+
+    """
 
     df = pd.read_excel(file,sheet)
     
@@ -70,7 +88,20 @@ def import_excel(file,sheet=0,**kwargs):
     #print(df)
     return df
 
-def import_list(data):
+def import_list(data,**kwargs):
+    """
+    import a list and generate a dataframe
+    uses the first item as column names and trys to convert start and end to datetime
+    
+    Parameters
+    ----------
+    data: list
+    
+    Returns
+    -------
+    df: pandas.DataFrame
+    
+    """
     df = pd.DataFrame(data[1:],columns=data[0])
     df.columns = df.columns.str.lower()
     df.start = pd.to_datetime(df.start,dayfirst=True)
@@ -78,7 +109,20 @@ def import_list(data):
     
     return df
 
-def import_mpp_xml(filename):
+def import_mpp_xml(filename,**kwargs):
+    """
+    import a ms project xml file
+    WARNING: this is definitely beta and has only been tried on one file!
+    
+    Parameters
+    ---------
+    filename: str
+    
+    Returns
+    -------
+    df: pandas.DataFrame
+    
+    """
     
     with open(filename,'r') as f:
         xml = xmltodict.parse(f.read())
@@ -112,7 +156,9 @@ def import_mpp_xml(filename):
 
 
 def choosefile(path = './'):
-    
+    """
+    uses tkinter.filedialogue.askopenfilename to pick a file
+    """
     dialogue = Tk()
     dialogue.withdraw()
     dialogue.wm_attributes('-topmost', 1)

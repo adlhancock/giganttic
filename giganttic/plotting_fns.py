@@ -7,15 +7,14 @@ Created on Fri May  5 08:32:23 2023
 @author: dhancock
 """
 
-import matplotlib as mpl
+from matplotlib import colors, colormaps
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from matplotlib.patches import Rectangle
-#from matplotlib.patches import Shadow
-from matplotlib import colormaps
+from matplotlib.patches import Rectangle, Patch
+
 from datetime import datetime as dt
 import pandas as pd
-#import numpy as np
+
 
 #%% Setup figure
 def setup_figure(df,
@@ -23,7 +22,30 @@ def setup_figure(df,
                  yvalues = None,
                  title="Gantt Chart",
                  **kwargs):
+    """
+    
 
+    Parameters
+    ----------
+    df : TYPE
+        DESCRIPTION.
+    dates : TYPE, optional
+        DESCRIPTION. The default is None.
+    yvalues : TYPE, optional
+        DESCRIPTION. The default is None.
+    title : TYPE, optional
+        DESCRIPTION. The default is "Gantt Chart".
+    **kwargs : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    ax : TYPE
+        DESCRIPTION.
+    fig : TYPE
+        DESCRIPTION.
+
+    """
 
 
     # resize and rescale dependent on number of rows
@@ -33,7 +55,7 @@ def setup_figure(df,
         rows = len(df.yloc.unique())
     
     s = 15 # basic figure size, in inches.
-    ratio = 2**0.5 * 1.5 # A4 ratio is sqrt 2, but using adjustment ratio to fix odd distortion
+    ratio = 2**0.5 # A4 ratio is sqrt 2, but using adjustment ratio to fix odd distortion
 
     if rows > 60:
         #print('WARNING: trying to print {} rows!'.format(rows))
@@ -97,34 +119,67 @@ def setup_figure(df,
     return ax,fig
 
 #%% get colors    
-def get_colors(index,
+def get_colors(event,
                df,
                fillcolumn,
                bordercolumn,
                cmap = colormaps['viridis'],
-               default_fill = "#aaaaaa",
+               default_fill = "#002F56",
                default_border = None,
                **kwargs):
+    """
+    gets colours for a shape
     
-    if 'border_cmap' in kwargs:
-        border_cmap = kwargs['border_cmap']
-    else:
-        border_cmap = cmap
+    Parameters
+    ----------
+    index
+        the index of the row.
+    df
+        dataframe
+    fillcolumn
+        which column is used to set the fill colour
+    bordercolumn
+        which column is used to set the border colour
+    cmap
+        The default is matplotlib.colormaps['viridis']
+    default_fill
+        event fill if cannot be found
+    default_border : TYPE, optional
+        event border colour
+    **kwargs : TYPE
+        DESCRIPTION.
+    
+    Returns
+    -------
+    fillcolour
+    
+    bordercolour
+    
+    """
+    if isinstance(cmap, list):
+        cmap = colors.LinearSegmentedColormap.from_list('cmap', cmap)
+    
+    if 'cmap_border' in kwargs:
+        cmap_border = kwargs['cmap_border']
         
-    
+    else:
+        cmap_border = cmap
+        if isinstance(cmap_border, list):
+           cmap_border = colors.LinearSegmentedColormap.from_list('cmap', cmap_border)
     
     if fillcolumn is not None:
-        fillvalue = df.iloc[index][fillcolumn]
-        #fillvalues = [x for x in df[fillcolumn].unique()]
+        #fillvalue = df.iloc[index][fillcolumn]
+        fillvalue = event[fillcolumn]
         fillvalues = df[fillcolumn].unique().tolist()
         fillcolor = cmap(
             fillvalues.index(fillvalue)/len(fillvalues))
     else:
         fillcolor = default_fill
     if bordercolumn is not None:
-        bordervalue = df.iloc[index][bordercolumn]
+        #bordervalue = df.iloc[index][bordercolumn]
+        bordervalue = event[bordercolumn]
         bordervalues = df[bordercolumn].unique().tolist()
-        bordercolor = border_cmap(
+        bordercolor = cmap_border(
             bordervalues.index(bordervalue)/len(bordervalues))
     else:
         bordercolor = default_border
@@ -133,7 +188,18 @@ def get_colors(index,
 
 #%% add milestone labels
 def add_milestone_labels(df):
-    """ add milestone labels to the middle of any bars that are milestones (shrug) """
+    """ 
+    add milestone labels to the middle of any bars that are milestones (shrug) 
+    
+    Parameters
+    ----------
+    df: pandas.DataFrame
+    
+    Returns
+    -------
+    None
+    
+    """
     for row, event in df.iterrows():
         if event.end != event.start:
             xval = event.start + (event.end-event.start)/2
@@ -145,6 +211,8 @@ def add_milestone_labels(df):
                 c='white',
                 va='center',
                 ha='center')
+            
+    return
 
 
 #%% plot event
@@ -154,7 +222,32 @@ def plot_event(yvalue,
                border_colour=None,
                ax=None,
                **kwargs):
+    """
+    plots a single event. if it's a milestone (zero-length event) try to add a label
     
+    Parameters
+    ----------
+    yvalue: float
+    
+    event: single-row of a dataframe
+    
+    fill_colour: str
+    
+    border_colour: str
+    
+    ax: matplotlib.axes._axes.Axes
+    
+    **kwargs
+    
+    
+    Returns
+    -------
+    shape: matplotlib.patches.Rectangle 
+        may be invisible, if a milestone, which will just be ploted
+        using ax.plot using a "D" marker
+    
+    
+    """
     start = mdates.date2num(event["start"])
     end = mdates.date2num(event["end"])
     width = end - start
@@ -201,7 +294,43 @@ def plot_event(yvalue,
         shape.set_zorder(10)
     return shape
 
-def plot_connections(df,ax,line_colour="grey", **kwargs):
+def plot_connections(df, 
+                     ax, 
+                     line_colour="grey", 
+                     **kwargs):
+    """
+    Add connection arrows.
+
+    Parameters
+    ----------
+    df : DataFrame
+
+    ax : axis
+
+    line_colour : str, optional
+        The default is "grey".
+    **kwargs : 
+        
+
+    Returns
+    -------
+    df : dataframe
+    
+    ax : matplotlib.axes._axes.Axes
+
+    """
+    
+    # some default variables
+    if 'arrow_style' not in kwargs:
+        arrow_style = '->'
+    if 'line_colour_error' not in kwargs:
+        line_colour_error = 'red'
+    line_style = '-'
+    line_style_error = ':'
+    if 'line_radius' not in kwargs:
+        line_radius = 8
+    
+    
     assert 'predecessors' in df.columns, 'no predecessors defined in dataframe'
     df.predecessors = df.predecessors.str.split(',')
     df.loc[df.predecessors.map(lambda x: x ==['']),'predecessors'] = float('nan')
@@ -217,20 +346,20 @@ def plot_connections(df,ax,line_colour="grey", **kwargs):
             y_start = p.yloc
             #print(x_start,y_start)
             if x_end < x_start:
-                lc = 'red'
-                ls = ':'
+                lc = line_colour_error
+                ls = line_style_error
             else:
                 lc = line_colour
-                ls = '-'
+                ls = line_style
             if x_end == x_start:
                 cs = "arc3,rad=0"
             else:
-                cs = "angle,angleA=-90,angleB=180,rad=8"
+                cs = "angle,angleA=-90,angleB=180,rad={}".format(line_radius)
             ax.annotate("",
                         xy = [x_end,y_end], xycoords = 'data',
                         xytext = [x_start,y_start], textcoords = 'data',
                         arrowprops = dict(
-                            arrowstyle = '->',
+                            arrowstyle = arrow_style,
                             linestyle = ls,
                             color = lc,
                             shrinkA = 8,
@@ -239,7 +368,6 @@ def plot_connections(df,ax,line_colour="grey", **kwargs):
                             ),
                         zorder = 100
                         )
-
     
     return df, ax
 
@@ -255,10 +383,59 @@ def gantt_chart(df,
                 legend = False,
                 nowline = True,
                 nowline_colour = '#7a9aeb',
-                connections = False,
+                connections = True,
                 tight = True,
                 max_label_length = 100,
                 **kwargs):
+    """
+    the main gantt chart function
+
+    Parameters
+    ----------
+    df : DataFrame
+        
+    title : str, optional
+        The default is "Gantt Chart".
+    fillcolumn : str, optional
+        The default is None.
+    bordercolumn : str, optional
+        The default is None.
+    customcolours : dict, optional
+        The default is None.
+    customcolour_field : str, optional
+        The default is 'name'.
+    yvalues : list, optional
+        Format [[ylocations], [ylabels]].  The default is None.
+    dates : list, optional
+        Format [start_date, end_date]
+        The default is None.
+    legend : TYPE, optional
+        add a legend. 
+        The default is False.
+    nowline : TYPE, optional
+        add a vertical line at today's date
+        The default is True.
+    nowline_colour : TYPE, optional
+        The default is '#7a9aeb'.
+    connections : TYPE, optional
+        add connection arrows for dependencies
+        The default is False.
+    tight : TYPE, optional
+        apply tight_layout. The default is True.
+    max_label_length : TYPE, optional
+        clip long labels with '...'
+        The default is 100.
+    **kwargs : TYPE
+        
+
+    Returns
+    -------
+    ax : ax
+
+    fig : matplotlib.figure.Figure
+
+
+    """
 
     assert all([x in df.columns for x in ['name','start','end']]), 'dataframe must have "name", "start", and "end" columns as a minimum'
 
@@ -293,7 +470,8 @@ def gantt_chart(df,
             
         #get colors
         try:
-            fc, bc = get_colors(row, df, fillcolumn, bordercolumn,**kwargs)
+            #fc, bc = get_colors(row, df, fillcolumn, bordercolumn,**kwargs)
+            fc, bc = get_colors(event, df, fillcolumn, bordercolumn,**kwargs)
         except:
             print("can't find fill color for {} for {}".format(df.iloc[row],fillcolumn))
             fc, bc = 'red',None
@@ -326,19 +504,54 @@ def gantt_chart(df,
             raise
         
     # create a legend
-    def create_legend(ax,fig,df,**kwargs):
+    def create_legend(ax,
+                      fig,
+                      df,
+                      **kwargs):
+        
+        """
+        add a legend
+        
+        Parameters
+        ----------
+        ax: matplotlib.axes._axes.Axes
+        
+        fig: matplotlib.figure.Figure
+        
+        df: pandas.DataFrame
+        
+        legend_sections: list, optional
+            Default is ['fill','border','customcolours']
+        
+        **kwargs
+        
+        
+        Returns
+        -------
+        
+        ax:
+        
+        fig:
+        
+        """
+        
         if 'cmap' in kwargs: 
             cmap = kwargs['cmap']
         else:
             cmap = colormaps['viridis']
-        if 'border_cmap' in kwargs:
-            border_cmap = kwargs['border_cmap']
+        if 'cmap_border' in kwargs:
+            cmap_border = kwargs['cmap_border']
         else:
-            border_cmap = cmap
+            cmap_border = cmap
+            
+        if 'legend_sections' in kwargs:
+            legend_sections = kwargs['legend_sections']
+        else:
+            legend_sections = ['fill','border','customcolours']
         
         patches = []
-        if fillcolumn is not None:
-            fill_title_patch = mpl.patches.Patch(
+        if fillcolumn is not None and 'fill' in legend_sections:
+            fill_title_patch = Patch(
                 color='white',label='{}:'.format(fillcolumn).upper()
                 )
             patches.append(fill_title_patch)
@@ -346,30 +559,33 @@ def gantt_chart(df,
             #fill_labels = df.loc[df[fillcolumn].notna(),fillcolumn].unique().tolist()  ##TEST
             for n,i in enumerate(fill_labels):
                 color = cmap(n/len(fill_labels))
-                patch = mpl.patches.Patch(color=color,edgecolor=None,label=i)
+                patch = Patch(color=color,edgecolor=None,label=i)
                 patches.append(patch)
-        if bordercolumn is not None:
-            border_title_patch = mpl.patches.Patch(
+                
+        if bordercolumn is not None and 'border' in legend_sections:
+            border_title_patch = Patch(
                 color='white',label='{}:'.format(bordercolumn).upper()
                 )
             patches.append(border_title_patch)
             border_labels = df[bordercolumn].unique().tolist()
             for n,i in enumerate(border_labels):
-                color = border_cmap(n/len(border_labels))
-                patch = mpl.patches.Patch(facecolor='white',edgecolor=color,label=i)
+                color = cmap_border(n/len(border_labels))
+                patch = Patch(facecolor='white',edgecolor=color,label=i)
                 patches.append(patch)
-        if customcolours is not None:
+                
+        if customcolours is not None and 'customcolours' in legend_sections:
             if 'customcolour_legend_title' in kwargs:
                 customcolour_legend_title = kwargs['customcolour_legend_title']
             else:
                 customcolour_legend_title = customcolour_field
-            customcolours_title_patch=mpl.patches.Patch(
+            customcolours_title_patch = Patch(
                 color="white",label="{}:".format(customcolour_legend_title).upper()
                 )
             patches.append(customcolours_title_patch)
             for c in customcolours:
-                patch = mpl.patches.Patch(color=customcolours[c],label=c)
+                patch = Patch(color=customcolours[c],label=c)
                 patches.append(patch)
+                
         if len(patches) != 0:
             ax.legend(handles=patches)
         else:
@@ -386,7 +602,31 @@ def gantt_chart(df,
     return ax,fig
 
 def save_figures(df,ax,fig, title, outputdir, maxlines = 60):
+    """
+    splits up an existing gantt chart into separate images, with a maximum 
+    number of rows given by maxlines and saves them. 
 
+    Parameters
+    ----------
+    df : TYPE
+        DESCRIPTION.
+    ax : TYPE
+        DESCRIPTION.
+    fig : TYPE
+        DESCRIPTION.
+    title : TYPE
+        DESCRIPTION.
+    outputdir : TYPE
+        DESCRIPTION.
+    maxlines : TYPE, optional
+        DESCRIPTION. The default is 60.
+
+    Returns
+    -------
+    None.
+
+    """
+    
     ylocs = df.yloc.unique().tolist()
         
     print('total number of rows: {}'.format(len(ylocs)))

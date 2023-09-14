@@ -20,13 +20,43 @@ def get_datestring():
 #%% data modification
 
 def filter_data(df,column,regex):
+    """
+    filters dataframe and reindexes
+
+    Parameters
+    ----------
+    df : TYPE
+        DESCRIPTION.
+    column : TYPE
+        DESCRIPTION.
+    regex : TYPE
+        DESCRIPTION.
+
+    Returns
+    -------
+    df : TYPE
+        DESCRIPTION.
+
+    """
     df = df[df[column].str.contains(
                 regex, regex=True,na=False)].reset_index(drop=True)
     return df
 
 def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1','R2','R3','R4']):
     """ 
-    this assumes the dataframe is a row of activities with columns for the milestone dates
+    extracts milestone dates if the dataframe is a row of activities with columns for the milestone dates
+    
+    Parameters
+    ---------
+    df: pandas.DataFrame
+    
+    milestones: list, optional
+        The default is ['T0','T1','T2','T3','T4','T5','R0','R1','R2','R3','R4']
+        
+    Returns
+    ------
+    df: pandas.DataFrame
+    
     """
     #df = df.reindex()
     df['activity_id'] = df.index.map(lambda x: str(x).zfill(4))
@@ -61,6 +91,14 @@ def flatten_milestones(df):
     Return values and labels in the format 
     [yloc, ylabel] which clears the milestone labels and puts them 
     in a single line below the main task bar 
+    
+    Parameters
+    ----------
+        df: pandas.DataFrame
+        
+    Returns
+    -------
+        df: pandas.DataFrame
     """
     
     df['ylabel'] = df.name
@@ -72,7 +110,42 @@ def flatten_milestones(df):
     return df
 
 def get_durations(df,milestone_cols):
+    """
+    if overall start and end aren't defined, uses a list of milestone columns
+    to generate them.
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        
+    milestone_cols : TYPE
+        
+
+    Returns
+    -------
+    df: pandas.DataFrame
+        
+
+    """
+    
     def startend(row,func):
+        """
+        finds the min or max of a df row which includes nan values
+        
+        Parameters
+        ---------
+        row: pandas.DataFrame row
+            one line dataframe
+        func
+            must be min or max
+            
+        Returns
+        -------
+        out: float
+        
+        """
+        assert func in [min, max], 'function must be min or max'
+        
         if list(row) == [pd.NaT]*5:
             out = dt.now()
         else:
