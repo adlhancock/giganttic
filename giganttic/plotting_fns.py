@@ -378,55 +378,6 @@ def gantt_chart(df,
     
     if legend is True:
         create_legend(ax, fig, df, **kwargs)
-        """
-        if 'cmap' in kwargs: 
-            cmap = kwargs['cmap']
-        else:
-            cmap = colormaps['viridis']
-        if 'border_cmap' in kwargs:
-            border_cmap = kwargs['border_cmap']
-        else:
-            border_cmap = cmap
-        
-        patches = []
-        if fillcolumn is not None:
-            fill_title_patch = mpl.patches.Patch(
-                color='white',label='{}:'.format(fillcolumn).upper()
-                )
-            patches.append(fill_title_patch)
-            fill_labels = df[fillcolumn].unique().tolist()
-            #fill_labels = df.loc[df[fillcolumn].notna(),fillcolumn].unique().tolist()  ##TEST
-            for n,i in enumerate(fill_labels):
-                color = cmap(n/len(fill_labels))
-                patch = mpl.patches.Patch(color=color,edgecolor=None,label=i)
-                patches.append(patch)
-        if bordercolumn is not None:
-            border_title_patch = mpl.patches.Patch(
-                color='white',label='{}:'.format(bordercolumn).upper()
-                )
-            patches.append(border_title_patch)
-            border_labels = df[bordercolumn].unique().tolist()
-            for n,i in enumerate(border_labels):
-                color = border_cmap(n/len(border_labels))
-                patch = mpl.patches.Patch(facecolor='white',edgecolor=color,label=i)
-                patches.append(patch)
-        if customcolours is not None:
-            if 'customcolour_legend_title' in kwargs:
-                customcolour_legend_title = kwargs['customcolour_legend_title']
-            else:
-                customcolour_legend_title = customcolour_field
-            customcolours_title_patch=mpl.patches.Patch(
-                color="white",label="{}:".format(customcolour_legend_title).upper()
-                )
-            patches.append(customcolours_title_patch)
-            for c in customcolours:
-                patch = mpl.patches.Patch(color=customcolours[c],label=c)
-                patches.append(patch)
-        if len(patches) != 0:
-            ax.legend(handles=patches)
-        else:
-            print("no legend items generated")
-        """
 
     # set tight layout, if requested
     if tight is True:
