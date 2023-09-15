@@ -6,7 +6,7 @@ Created on Fri May  5 08:32:23 2023
 
 @author: dhancock
 """
-
+import os
 from matplotlib import colors, colormaps
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
@@ -19,24 +19,40 @@ import pandas as pd
 
 #%% Setup figure
 def setup_figure(df,
-                 dates = None,
-                 yvalues = None,
+                 dates: list | None = None,
+                 yvalues: list | None = None,
                  title = "Gantt Chart",
+                 fontsize: int | float = None,
+                 figsize: list | int | float | None = None,
+                 dpi: int = None,
+                 figratio: str = 'print',
                  **kwargs):
-    """
-    
+    """ sets up the figure.
 
     Parameters
     ----------
     df : TYPE
         DESCRIPTION.
-    dates : TYPE, optional
+    dates : list | None, optional
         DESCRIPTION. The default is None.
-    yvalues : TYPE, optional
+    yvalues : list | None, optional
         DESCRIPTION. The default is None.
     title : TYPE, optional
         DESCRIPTION. The default is "Gantt Chart".
+    fontsize : int | float, optional
+        DESCRIPTION. The default is None.
+    figsize : list | int | float | None, optional
+        DESCRIPTION. The default is None.
+    dpi : int, optional
+        DESCRIPTION. The default is None.
+    figratio : str, optional
+        DESCRIPTION. The default is 'print'.
     **kwargs : TYPE
+        DESCRIPTION.
+
+    Raises
+    ------
+    AssertionError
         DESCRIPTION.
 
     Returns
@@ -47,41 +63,83 @@ def setup_figure(df,
         DESCRIPTION.
 
     """
-
-
-    # resize and rescale dependent on number of rows
-    if yvalues is None:
-        rows = len(df)
-    else:
-        rows = len(df.yloc.unique())
     
-    s = 15 # basic figure size, in inches.
-    ratio = 2**0.5 # A4 ratio is sqrt 2, but using adjustment ratio to fix odd distortion
+    # resize and rescale dependent on number of rows
+    if 'yvalue' in df.columns:
+        rows = len(df.yvalue.unique())
+        #print('DEBUG: rows set by df.yvalue')
+    elif yvalues is not None:
+        rows = len(set(yvalues[0]))
+    else:
+        rows = len(df)
+    
+    if isinstance(figsize, float) or isinstance(figsize, int):
+        s = figsize
+    else:
+        s = 10 # size of figure short side, in inches
+        
+    if figratio == 'screen':
+        ratio = 1.78
+    elif figratio == 'print':
+        ratio = 1.5 # A4 ratio is sqrt 2, but using adjustment ratio to fix odd distortion
+    elif isinstance(figratio, float) or isinstance(figratio, int):
+        ratio = figratio
+    else:
+        raise AssertionError('figratio must be "screen", "print", or float')
 
-    if rows > 60:
-        #print('WARNING: trying to print {} rows!'.format(rows))
-        plt.rcParams['font.size'] = 8
-        figuresize = [s, rows/1.5] 
+
+    if rows > 200:
+        print('WARNING: trying to display {} rows. Very Unlikely to be legible!'.format(rows))
+        fontsize = 3
+        figuresize = [s, rows/2]
+        figuredpi = 50
+    if rows > 120:
+        print('WARNING: trying to display {} rows. Unlikely to be legible!'.format(rows))
+        fontsize = 8
+        figuresize = [s, rows/1.5]
+        figuredpi = 60
+    elif rows > 65:
+        print('WARNING: trying to display {} rows!'.format(rows))
+        fontsize = 6
+        figuresize = [s, rows/1.5]
         figuredpi = 60
     elif rows > 40:
-        plt.rcParams['font.size'] = 8
+        fontsize = 8
         figuresize = [s, s*ratio] # A4 portrait ratio
-        figuredpi = 60
+        figuredpi = 70
     elif rows > 10:
-        plt.rcParams['font.size'] = 8
+        fontsize = 10
         figuresize = [s*ratio, s] # A4 landscape ratio
         figuredpi = 100
     else:
-        plt.rcParams['font.size'] = 8
-        figuresize = [s, rows] # thin landscape ratio
+        fontsize = 10
+        figuresize = [s*2, rows] # thin landscape ratio
         figuredpi = 100
+        
+    if figsize is not None:
+        print('manually setting figure size to {}'.format(figsize))
+        figuresize = figsize
+    if dpi is not None:
+        print('manually setting figure dpi to {}'.format(dpi))
+        figuredpi = dpi
+    if fontsize is not None:
+        plt.rcParams['font.size'] = fontsize
 
+    
+    plt.rcParams['font.size'] = fontsize
+    plt.rcParams['figure.dpi'] = figuredpi
+    plt.rcParams['figure.figsize'] = figuresize
     
     fig = plt.figure(
         figsize = figuresize,
         dpi = figuredpi,
         num = title,
         )
+    
+    #print('## DEBUG ##')
+    #print('rows:{} dpi:{} figsize:{} fontsize:{}'.format(rows,figuredpi,figuresize,fontsize))
+    #print('rows:{} dpi:{} figsize:{} fontsize:{}'.format(rows,fig.dpi,[fig.get_figwidth(),fig.get_figheight()],plt.rcParams['font.size']))
+    #print('\n')
     
     ax = fig.add_subplot(111)
     ax.set_title(title)
@@ -127,6 +185,7 @@ def get_colors(df,
                cmap_border = colormaps['tab10'],
                default_fill = "#002F56",
                default_border = None,
+               recolour = True,
                **kwargs):
     """
     gets colours for the dataframe
@@ -170,9 +229,13 @@ def get_colors(df,
            cmap_border = colors.ListedColormap(cmap_border, 'cmap_border')
     else:
         cmap_border = cmap
-
-    df['fillcolour'] = None
-    df['bordercolour'] = None
+        
+    if recolour is True:
+        df['fillcolour'] = None
+        df['bordercolour'] = None
+    
+    
+    
     #set the fill colour    
     if fillcolumn is not None:
         
@@ -191,9 +254,6 @@ def get_colors(df,
     else:
         df.fillcolour = default_fill
     
-
-
-
     #set the border colour
     if bordercolumn is not None:
         bordervalues = df[bordercolumn].unique().tolist()
@@ -224,6 +284,8 @@ def add_milestone_labels(df):
     None
     
     """
+    zorder = len(df)+10
+    
     for row, event in df.iterrows():
         if event.end != event.start:
             xval = event.start + (event.end-event.start)/2
@@ -231,7 +293,7 @@ def add_milestone_labels(df):
             plt.text(
                 xval, yval,
                 '{}'.format(str(event.milestone)),
-                zorder = 20,
+                zorder = zorder,
                 c = 'white',
                 va = 'center',
                 ha = 'center')
@@ -285,7 +347,7 @@ def plot_event(yvalue,
         ax.plot(x, y,
                 marker = "D",
                 color = fill_colour,
-                #markersize = "10"
+                markersize = plt.rcParams['font.size']*0.5
                 )
 
         # create a "dummy" rectangle, to avoid errors
@@ -318,6 +380,7 @@ def plot_event(yvalue,
         shape.set_zorder(10)
     return shape
 
+#%% plot connections
 def plot_connections(df, 
                      ax, 
                      line_colour = "grey", 
@@ -361,13 +424,13 @@ def plot_connections(df,
     
     for row, event in df.loc[df.predecessors.notna()].iterrows():
         x_end = mdates.date2num(event.start)
-        y_end = event.yloc
+        y_end = event.yvalue
                 
         for predecessor in event.predecessors:
                         
             p = df[df.id == predecessor]
             x_start = mdates.date2num(p.end)
-            y_start = p.yloc
+            y_start = p.yvalue
             #print(x_start, y_start)
             if x_end < x_start:
                 lc = line_colour_error
@@ -395,7 +458,7 @@ def plot_connections(df,
     
     return df, ax
 
-#%% 
+#%% create legend
 def create_legend(ax,
                   fig,
                   df,
@@ -463,10 +526,12 @@ def create_legend(ax,
             )
         patches.append(fill_title_patch)
         fill_labels = df[fillcolumn].unique().tolist()
-        #fill_labels = df.loc[df[fillcolumn].notna(), fillcolumn].unique().tolist()  ##TEST
         for n, i in enumerate(fill_labels):
-            color = cmap(n/len(fill_labels))
-            patch = Patch(color = color, edgecolor = None, label = i)
+            fillcolour = df.loc[df[fillcolumn]==i,'fillcolour'].unique().tolist()
+            assert(len(fillcolour) == 1 ), 'inconsistent colours for legend'
+            fillcolour = fillcolour[0]
+            #print(fillcolour)
+            patch = Patch(color = fillcolour, edgecolor = None, label = i)
             patches.append(patch)
     
     # draw the border colour section of the legend        
@@ -477,8 +542,12 @@ def create_legend(ax,
         patches.append(border_title_patch)
         border_labels = df[bordercolumn].unique().tolist()
         for n, i in enumerate(border_labels):
-            color = cmap_border(n/len(border_labels))
-            patch = Patch(facecolor = 'white', edgecolor = color, label = i)
+            bordercolour = df.loc[df[bordercolumn]==i,'bordercolour'].unique().tolist()
+            assert(len(bordercolour) == 1), 'inconsistent border colours for legend'
+            bordercolour = bordercolour[0]
+            #print(bordercolour)
+            
+            patch = Patch(facecolor = 'white', edgecolor = bordercolour, label = i)
             patches.append(patch)
     
     # draw the custom colours section of the legend        
@@ -496,7 +565,8 @@ def create_legend(ax,
             patches.append(patch)
             
     if len(patches) != 0:
-        ax.legend(handles = patches)
+        plt.rcParams['legend.framealpha'] = 0.5
+        ax.legend(handles = patches, framealpha = 0.5)
     else:
         print("no legend items generated")
     return
@@ -586,7 +656,7 @@ def gantt_chart(df,
     else:
         ylocs, ylabels = yvalues
     
-    df['yloc'] = ylocs
+    df['yvalue'] = ylocs
 
     ax, fig = setup_figure(df, 
                            dates = dates, 
@@ -648,6 +718,7 @@ def gantt_chart(df,
 
     return ax, fig
 
+#%% save figures
 def save_figures(df, ax, fig, title, outputdir, maxlines = 60):
     """ Splits up an existing gantt chart into separate images, 
     with a maximum number of rows given by maxlines and saves them. 
@@ -673,14 +744,17 @@ def save_figures(df, ax, fig, title, outputdir, maxlines = 60):
 
     """
     
-    ylocs = df.yloc.unique().tolist()
+    ylocs = df.yvalue.unique().tolist()
         
     print('total number of rows: {}'.format(len(ylocs)))
     print('number of figures: {}'.format(round(len(ylocs)/maxlines)))
+    
     if outputdir.endswith('/'):
         outputdir = outputdir[:-1]
         print('stripped trailing / from outputdir')
-        print(outputdir)
+    if os.path.exists(outputdir) is False:
+        os.mkdir(outputdir)
+        print('created new directory: {}'.format(outputdir))
     
     #resize and set layout
     plt.rcParams.update({'font.size': 10})

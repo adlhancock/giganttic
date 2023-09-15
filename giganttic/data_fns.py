@@ -88,9 +88,8 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
 
 def flatten_milestones(df):
     """ 
-    Return values and labels in the format 
-    [yloc, ylabel] which clears the milestone labels and puts them 
-    in a single line below the main task bar 
+    returns the dataframe with additional columns ylabel and yvalue 
+    which clears the milestone labels and puts them in a single line below the main task bar 
     
     Parameters
     ----------
@@ -103,7 +102,7 @@ def flatten_milestones(df):
     
     df['ylabel'] = df.name
     df.loc[df['row_type'] == 'Milestone','ylabel'] = ''
-    df['yvalue'] = df.activity_id.map(float) * 2
+    df['yvalue'] = df.activity_id.map(float) * 1.8
     df.loc[df['row_type'] == 'Milestone','yvalue'] = df.yvalue + 0.7
     #ylocs = df.activity_id
     # yvalues = [df.yvalue.tolist(),df.ylabel.tolist()]

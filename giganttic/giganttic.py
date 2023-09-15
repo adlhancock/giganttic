@@ -8,19 +8,25 @@ specifically designed for large projects
 
 import matplotlib.pyplot as plt
 
-import giganttic.import_fns as gim
-from giganttic.data_fns import filter_data
-from giganttic.plotting_fns import gantt_chart
+#import giganttic.import_fns as gim
+#from giganttic.data_fns import filter_data
+#from giganttic.plotting_fns import gantt_chart
+
+from . import import_fns as gim
+from .data_fns import filter_data
+from .plotting_fns import gantt_chart
+
 import os
 
 
 #%% all in one function
 
-def giganttic(inputfile = 'Auto',
-              outputfile = 'Auto',
-              title = 'Auto',
-              filter = None,
+def giganttic(inputfile: str | list = 'Auto',
+              outputfile: str = 'Auto',
+              title: str = 'Auto',
+              filter: str | None = None,
               **kwargs):
+    
     """
     all in one 'giganttic' function which takes an input and output path
     to import a range of filetypes and generate a giganntic gantt chart.
@@ -67,12 +73,13 @@ def giganttic(inputfile = 'Auto',
     else:
         raise ValueError("input must be list or string with path to .csv, .xlsx, or mpp .xml file")
 
+    # create a default string to use for naming
     if isinstance(inputfile, str):
         defaultstring = os.path.basename(inputfile).rsplit('.')[-2]
     if isinstance(inputfile, list):
         defaultstring = 'gantt-chart'
     
-    
+    # use the default string if Auto options are set
     if outputfile == 'Auto':
         outputfile = '{}.png'.format(defaultstring)
     if title == 'Auto'    :
@@ -91,5 +98,4 @@ def giganttic(inputfile = 'Auto',
 
     return df, ax, fig
 
-    
 
