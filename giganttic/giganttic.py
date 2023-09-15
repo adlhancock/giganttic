@@ -16,10 +16,10 @@ import os
 
 #%% all in one function
 
-def giganttic(inputfile='Auto',
-              outputfile='Auto',
-              title='Auto',
-              filter=None,
+def giganttic(inputfile = 'Auto',
+              outputfile = 'Auto',
+              title = 'Auto',
+              filter = None,
               **kwargs):
     """
     all in one 'giganttic' function which takes an input and output path
@@ -83,7 +83,7 @@ def giganttic(inputfile='Auto',
         df = filter_data(df,filter[0],filter[1])
         
     # plot the gantt chart
-    ax, fig = gantt_chart(df,title=title,**kwargs)
+    ax, fig = gantt_chart(df,title = title,**kwargs)
     fig.show()
     
     # save the figure

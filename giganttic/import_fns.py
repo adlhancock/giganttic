@@ -19,7 +19,7 @@ from tkinter.filedialog import askopenfilename
 def import_csv(
     file,
     headers = True, 
-    columns=["id","name","start","end","level"],
+    columns = ["id","name","start","end","level"],
     **kwargs
     ):
     '''
@@ -44,14 +44,14 @@ def import_csv(
 
     if all(["start" in df.columns, "end" in df.columns]):
         
-        df.start = pd.to_datetime(df.start,dayfirst=True)
-        df.end = pd.to_datetime(df.end,dayfirst=True)
+        df.start = pd.to_datetime(df.start,dayfirst = True)
+        df.end = pd.to_datetime(df.end,dayfirst = True)
     else:
         print("{}: WARNING - no start and end values defined".format(__name__))        
 
     return df
 
-def import_excel(file,sheet=0,**kwargs):
+def import_excel(file,sheet = 0,**kwargs):
     """
     import an excel file, defaulting to the first worksheet
 
@@ -70,11 +70,11 @@ def import_excel(file,sheet=0,**kwargs):
 
     """
 
-    df = pd.read_excel(file,sheet)
+    df = pd.read_excel(file, sheet)
     
     if all(["start" in df.columns, "end" in df.columns]):
-        df.start = pd.to_datetime(df.start,dayfirst=True)
-        df.end = pd.to_datetime(df.end,dayfirst=True)
+        df.start = pd.to_datetime(df.start,dayfirst = True)
+        df.end = pd.to_datetime(df.end,dayfirst = True)
     else:
         print("{}: WARNING - no start and end values defined".format(__name__))   
 
@@ -88,7 +88,7 @@ def import_excel(file,sheet=0,**kwargs):
     #print(df)
     return df
 
-def import_list(data,**kwargs):
+def import_list(data, **kwargs):
     """
     import a list and generate a dataframe
     uses the first item as column names and trys to convert start and end to datetime
@@ -102,10 +102,10 @@ def import_list(data,**kwargs):
     df: pandas.DataFrame
     
     """
-    df = pd.DataFrame(data[1:],columns=data[0])
+    df = pd.DataFrame(data[1:],columns = data[0])
     df.columns = df.columns.str.lower()
-    df.start = pd.to_datetime(df.start,dayfirst=True)
-    df.end = pd.to_datetime(df.end,dayfirst=True)
+    df.start = pd.to_datetime(df.start,dayfirst = True)
+    df.end = pd.to_datetime(df.end,dayfirst = True)
     
     return df
 
@@ -141,10 +141,10 @@ def import_mpp_xml(filename,**kwargs):
     
     datefmt = '%Y-%m-%dT%H:%M:%S'
     
-    df.Start = pd.to_datetime(df.Start,format=datefmt)
-    df.Finish = pd.to_datetime(df.Finish,format=datefmt)
+    df.Start = pd.to_datetime(df.Start,format = datefmt)
+    df.Finish = pd.to_datetime(df.Finish,format = datefmt)
     
-    df = df.rename(columns=dict(
+    df = df.rename(columns = dict(
         UID = 'id',
         Name = 'name',
         Start = 'start',
@@ -162,6 +162,6 @@ def choosefile(path = './'):
     dialogue = Tk()
     dialogue.withdraw()
     dialogue.wm_attributes('-topmost', 1)
-    filename = askopenfilename(parent=dialogue, initialdir=path)
+    filename = askopenfilename(parent = dialogue, initialdir = path)
     
     return filename
