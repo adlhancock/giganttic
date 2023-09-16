@@ -44,8 +44,8 @@ def import_csv(
 
     if all(["start" in df.columns, "end" in df.columns]):
         
-        df.start = pd.to_datetime(df.start,dayfirst = True)
-        df.end = pd.to_datetime(df.end,dayfirst = True)
+        df.start = pd.to_datetime(df.start,dayfirst=True,format='mixed')
+        df.end = pd.to_datetime(df.end,dayfirst=True,format='mixed')
     else:
         print("{}: WARNING - no start and end values defined".format(__name__))        
 
@@ -73,8 +73,8 @@ def import_excel(file,sheet = 0,**kwargs):
     df = pd.read_excel(file, sheet)
     
     if all(["start" in df.columns, "end" in df.columns]):
-        df.start = pd.to_datetime(df.start,dayfirst = True)
-        df.end = pd.to_datetime(df.end,dayfirst = True)
+        df.start = pd.to_datetime(df.start,dayfirst=True,format='mixed')
+        df.end = pd.to_datetime(df.end,dayfirst=True,format='mixed')
     else:
         print("{}: WARNING - no start and end values defined".format(__name__))   
 
@@ -104,8 +104,8 @@ def import_list(data, **kwargs):
     """
     df = pd.DataFrame(data[1:],columns = data[0])
     df.columns = df.columns.str.lower()
-    df.start = pd.to_datetime(df.start,dayfirst = True)
-    df.end = pd.to_datetime(df.end,dayfirst = True)
+    df.start = pd.to_datetime(df.start,dayfirst=True,format='mixed')
+    df.end = pd.to_datetime(df.end,dayfirst=True,format='mixed')
     
     return df
 
@@ -141,8 +141,8 @@ def import_mpp_xml(filename,**kwargs):
     
     datefmt = '%Y-%m-%dT%H:%M:%S'
     
-    df.Start = pd.to_datetime(df.Start,format = datefmt)
-    df.Finish = pd.to_datetime(df.Finish,format = datefmt)
+    df.Start = pd.to_datetime(df.Start,format='mixed')
+    df.Finish = pd.to_datetime(df.Finish,format='mixed')
     
     df = df.rename(columns = dict(
         UID = 'id',
@@ -153,7 +153,6 @@ def import_mpp_xml(filename,**kwargs):
     
     df.name = df.WBS+' '+df.name
     return df
-
 
 def choosefile(path = './'):
     """

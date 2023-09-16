@@ -79,9 +79,7 @@ def giganttic(inputfile: str | list = 'Auto',
     if isinstance(inputfile, list):
         defaultstring = 'gantt-chart'
     
-    # use the default string if Auto options are set
-    if outputfile == 'Auto':
-        outputfile = '{}.png'.format(defaultstring)
+
     if title == 'Auto'    :
         title = defaultstring
 
@@ -90,11 +88,14 @@ def giganttic(inputfile: str | list = 'Auto',
         df = filter_data(df,filter[0],filter[1])
         
     # plot the gantt chart
-    ax, fig = gantt_chart(df,title = title,**kwargs)
-    fig.show()
+    ax, fig = gantt_chart(df,title=title,**kwargs)
+    #fig.show()
     
     # save the figure
-    plt.savefig(outputfile)
+    if outputfile is not None:
+        if outputfile == 'Auto':
+            outputfile = '{}.png'.format(defaultstring)
+        plt.savefig(outputfile)
 
     return df, ax, fig
 
