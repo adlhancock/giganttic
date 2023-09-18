@@ -1,0 +1,6 @@
+matplotlib
+pandas
+openpyxl
+xml2dict
+tkinter
+numpy

@@ -1,2 +1,2 @@
 # giganttic
-a matplotlib gantt chart tool using patches, specifically designed for large projects
+A python gantt chart package, mostly using pandas and matplotlib patches
