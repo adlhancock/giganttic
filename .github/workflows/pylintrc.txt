@@ -190,9 +190,9 @@ good-names=i,
            k,
            ex,
            Run,
-		   ax,
-		   fig,
-		   df,
+           ax,
+           fig,
+           df,
            _
 
 # Good variable names regexes, separated by a comma. If names match any regex,
