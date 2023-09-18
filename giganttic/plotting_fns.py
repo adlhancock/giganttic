@@ -69,7 +69,6 @@ def setup_figure(df,
         rows = len(set(yvalues[0]))
     else:
         rows = len(df)
-    
     # set figure ratio
     figure_ratio = kwargs.get('figure_ratio','print')
     if figure_ratio == 'screen':
@@ -126,7 +125,6 @@ def setup_figure(df,
             'figure_height':4, # 6:4 modest size
             'figure_dpi':100}
     }
-    
     figure_size = kwargs.get('figure_size',None)
 
     if isinstance(figure_size,list):
@@ -136,9 +134,9 @@ def setup_figure(df,
         # use the max_row values in the figure_sizes dict to set figure_size
         size_names = list(figure_sizes.keys())
         size_names.remove('default')
-        max_row_values = [figure_sizes[size_name]['max_rows'] 
+        max_row_values = [figure_sizes[size_name]['max_rows']
                           for size_name in size_names]
-        size_dictionary = dict(zip(max_row_values,size_names))    
+        size_dictionary = dict(zip(max_row_values,size_names))
         for max_size in size_dictionary:
             if rows < max_size:
                 figure_size = size_dictionary[max_size]
@@ -148,7 +146,7 @@ def setup_figure(df,
                                          figure_sizes['default'])
 
     #print(f'DEBUG:{rows:<5} {figure_size:<10} {figure_dimensions}')
-    
+
     figure_width = figure_dimensions.get('figure_width')
     figure_height = figure_dimensions.get('figure_height')
     font_size = kwargs.get('font_size',figure_dimensions.get('font_size'))
@@ -203,7 +201,8 @@ def get_colors(df,
                default_fill="#002F56",
                default_border=None,
                recolour=True,
-               **kwargs):
+               #**kwargs
+               ):
     """
     gets colours for the dataframe
 
@@ -322,7 +321,8 @@ def plot_event(yvalue,
                fill_colour="#aaaaaa",
                border_colour=None,
                ax=None,
-               **kwargs):
+               #**kwargs
+               ):
     """
     plots a single event.
     if it's a milestone (zero-length event) try to add a label
@@ -373,16 +373,10 @@ def plot_event(yvalue,
             height=0)
 
         # add a text label if possible
-        try:
-            if pd.notna(event.milestone):
-                try:
-                    label_text = str(event.milestone)
-                    mslabel = f'  {label_text}'
-                except:
-                    mslabel = '  ??'
-                plt.text(x, y, mslabel)
-        except:
-            pass
+        if pd.notna(event.milestone):
+            label_text = str(event.milestone)
+            mslabel = f'{label_text:>4}'
+            plt.text(x, y, mslabel)
 
     # plot as a bar
     else:
@@ -492,33 +486,13 @@ def create_legend(ax,
     legend_sections: list, optional
         Default is ['fill', 'border', 'customcolours']
 
-    **kwargs
-
-
     Returns
     -------
-
     ax:
 
     fig:
 
     """
-    
-    '''
-    cmap = cmaps['fill']
-    if 'border' in cmaps:
-        cmap_border = cmaps['border']
-    else:
-        cmap_border = None
-    if isinstance(cmap, list):
-        cmap = colors.ListedColormap(cmap, 'cmap')
-
-    if cmap_border is not None:
-        if isinstance(cmap_border, list):
-           cmap_border = colors.ListedColormap(cmap_border, 'cmap_border')
-    else:
-        cmap_border = cmap
-    '''
 
     # choose which bits of the legend to include
     legend_sections = kwargs.get('legend_sections',
@@ -548,7 +522,7 @@ def create_legend(ax,
             )
         patches.append(border_title_patch)
         border_labels = df[bordercolumn].unique().tolist()
-        for n, i in enumerate(border_labels):
+        for i in border_labels:
             bordercolour = df.loc[
                 df[bordercolumn]==i,'bordercolour'].unique().tolist()
             assert(len(bordercolour) == 1), 'inconsistent border colours for legend'
@@ -776,6 +750,7 @@ def save_figures(df, ax, fig, title, outputdir, maxlines=60):
     # set the y axis limits to chunks of the whole and save individual files
     start, stop = 0, 0
 
+    figure_files = []
     while stop < len(ylocs):
         stop = start + maxlines
         if stop > len(ylocs):
@@ -788,8 +763,10 @@ def save_figures(df, ax, fig, title, outputdir, maxlines=60):
         #ax.set_ylim((stop+1, start-1))
         ax.set_ylim((ymax+1, ymin-1))
         ax.set_title(f'{title} (rows {start}-{stop})')
-        fig.savefig(f'{outputdir}/{title} - {start}-{stop}.png',dpi=300)
+        figure_filename = f'{outputdir}/{title} - {start}-{stop}.png'
+        fig.savefig(figure_filename,dpi=300)
+        figure_files.append(figure_filename)
         print(f'Plotted lines {start} to {stop}')
         start += maxlines
 
-    return
+    return figure_files
