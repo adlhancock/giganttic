@@ -6,10 +6,8 @@ Created on Fri May  5 08:30:31 2023
 
 @author: dhancock
 """
-
-import pandas as pd
-#import numpy as np
 from datetime import datetime as dt
+import pandas as pd
 
 def get_datestring():
     """ uses dt.now() to return a yyymmdd string
@@ -36,11 +34,14 @@ def filter_data(df,column,regex):
     df : TYPE
         DESCRIPTION.
     """
-    df = df[df[column].str.contains(
-                regex, regex=True,na=False)].reset_index(drop=True)
+    df = df[df[column].str.contains(regex,
+                                    regex=True,
+                                    na=False)].reset_index(drop=True)
     return df
 
-def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1','R2','R3','R4']):
+def extract_milestones(df,
+                       milestones=['T0','T1','T2','T3','T4','T5',
+                                   'R0','R1','R2','R3','R4']):
     """
     extracts milestone dates if the dataframe is
     a row of activities with columns for the milestone dates
@@ -48,10 +49,10 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
     Parameters
     ---------
     df: pandas.DataFrame
-    
+
     milestones: list, optional
         The default is ['T0','T1','T2','T3','T4','T5','R0','R1','R2','R3','R4']
-        
+
     Returns
     ------
     df: pandas.DataFrame
@@ -87,16 +88,16 @@ def flatten_milestones(df):
     returns the dataframe with additional columns ylabel and yvalue 
     which clears the milestone labels and puts 
     them in a single line below the main task bar 
-    
+
     Parameters
     ----------
         df: pandas.DataFrame
-        
+
     Returns
     -------
         df: pandas.DataFrame
     """
-    
+
     df['ylabel'] = df.name
     df.loc[df['row_type'] == 'Milestone','ylabel'] = ''
     df['yvalue'] = df.activity_id.map(float) * 1.8
@@ -113,44 +114,40 @@ def get_durations(df,milestone_cols):
     Parameters
     ----------
     df : pandas.DataFrame
-        
+
     milestone_cols : TYPE
-        
+
 
     Returns
     -------
     df: pandas.DataFrame
-        
 
     """
-    
+
     def startend(row,func):
         """
         finds the min or max of a df row which includes nan values
-        
+
         Parameters
         ---------
         row: pandas.DataFrame row
             one line dataframe
         func
             must be min or max
-            
+
         Returns
         -------
         out: float
-        
+
         """
         assert func in [min, max], 'function must be min or max'
-        
         if list(row) == [pd.NaT]*5:
             out = dt.now()
         else:
             out = func([x for x in row if x is not pd.NaT])
         return out    
-    
+
     df['start'] = df[milestone_cols].apply(lambda x: startend(x,min),axis=1)
     df['end'] = df[milestone_cols].apply(lambda x: startend(x,max),axis=1)
-    
     df['duration'] = df.end-df.start
     return df
-    
