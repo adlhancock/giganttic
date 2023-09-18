@@ -20,4 +20,4 @@ jobs:
         pip install pylint
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py') --good-names=i,j,k,ex,Run,ax,fig,df
+        pylint $(git ls-files '*.py')
