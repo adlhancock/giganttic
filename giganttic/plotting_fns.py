@@ -207,23 +207,23 @@ def get_colors(df,
         event border colour
     **kwargs : TYPE
         DESCRIPTION.
-    
+
     Returns
     -------
     fillcolour
-    
+
     bordercolour
-    
+
     df
-    
+
     cmaps: dict
         keys are 'fill' and 'border'
-    
+
     """
     # set the colourmaps
     if isinstance(cmap, list):
         cmap = colors.ListedColormap(cmap, 'cmap')
-    
+
     if cmap_border is not None:
         if isinstance(cmap_border, list):
            cmap_border = colors.ListedColormap(cmap_border, 'cmap_border')
@@ -233,9 +233,9 @@ def get_colors(df,
     if recolour is True:
         df['fillcolour'] = None
         df['bordercolour'] = None
-    
-    
-    
+
+
+
     #set the fill colour    
     if fillcolumn is not None:
         
@@ -253,7 +253,7 @@ def get_colors(df,
                 lambda x: fillcolours[fillvalues.index(x)])
     else:
         df.fillcolour = default_fill
-    
+
     #set the border colour
     if bordercolumn is not None:
         bordervalues = df[bordercolumn].unique().tolist()
@@ -261,8 +261,8 @@ def get_colors(df,
             lambda x: cmap_border(bordervalues.index(x)/len(bordervalues)))
     else:
         df.bordercolor = default_border
-        
-    
+
+
     #df['bordercolour'] = df[bordercolumn].map(lambda x: allcolours[bordervalues.index(x)])
     cmaps = dict(
         fill = cmap,
@@ -285,7 +285,7 @@ def add_milestone_labels(df):
     
     """
     zorder = len(df)+10
-    
+
     for row, event in df.iterrows():
         if event.end != event.start:
             xval = event.start + (event.end-event.start)/2

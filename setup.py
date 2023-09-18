@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='giganttic',
-    version='0.1.0',    
+    version='0.1.0',
     description='A python gantt chart package, mostly using pandas and matplotlib patches',
     url='https://github.com/adlhancock/giganttic',
     author='David Hancock',
@@ -14,6 +14,6 @@ setup(
                       'openpyxl',
                       'xml2dict',
                       'tkinter',
-                      'numpy',                     
+                      'numpy',
                       ],
     )

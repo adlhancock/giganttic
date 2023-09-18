@@ -39,10 +39,10 @@ def filter_data(df,column,regex):
     return df
 
 def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1','R2','R3','R4']):
-    """ 
-    extracts milestone dates if the dataframe is 
+    """
+    extracts milestone dates if the dataframe is
     a row of activities with columns for the milestone dates
-    
+
     Parameters
     ---------
     df: pandas.DataFrame

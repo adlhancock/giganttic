@@ -58,7 +58,7 @@ def case_3():
     CASE 3 all in one with a list
     """
     
-    DUMMYDATA = [
+    dummydata = [
         ["id","name","start","end","level"],
         [1,"task 1","31-Jan-2023","12/12/2028",1],
         [2,"task 2","31/08/2023","12/12/2025",2],
@@ -71,7 +71,7 @@ def case_3():
         [9,"D","01/01/2027","12/12/2028",3],
         [10,"F","01/01/2027","12/12/2030",2],
         ]
-    out = gt.giganttic(DUMMYDATA,'case_3.png','Example 3', connections = False,default_fill='pink')
+    out = gt.giganttic(dummydata,'case_3.png','Example 3', connections = False,default_fill='pink')
     return out
 
 def case_4(): 
