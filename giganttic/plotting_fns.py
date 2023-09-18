@@ -270,14 +270,16 @@ def add_milestone_labels(df):
     None
 
     """
+    
     zorder = len(df)+10
     for row, event in df.iterrows():
         if event.end != event.start:
+            label_text = str(event.milestone)
             xval = event.start + (event.end-event.start)/2
             yval = row
             plt.text(
                 xval, yval,
-                '{}'.format(str(event.milestone)),
+                f'{label_text}',
                 zorder=zorder,
                 c='white',
                 va='center',
@@ -346,9 +348,10 @@ def plot_event(yvalue,
         try:
             if pd.notna(event.milestone):
                 try:
-                    mslabel = '  {}'.format(str(event.milestone))
+                    label_text = str(event.milestone)
+                    mslabel = f'  {label_text}'
                 except:
-                    mslabel = '  {}'.format('??')
+                    mslabel = '  ??'
                 plt.text(x, y, mslabel)
         except:
             pass
@@ -507,7 +510,7 @@ def create_legend(ax,
     # draw the fill column section of the legend
     if fillcolumn is not None and 'fill' in legend_sections:
         fill_title_patch = Patch(
-            color='white', label='{}:'.format(fillcolumn).upper()
+            color='white', label=f'{fillcolumn}:'.upper()
             )
         patches.append(fill_title_patch)
         fill_labels = df[fillcolumn].unique().tolist()
@@ -523,7 +526,7 @@ def create_legend(ax,
     # draw the border colour section of the legend
     if bordercolumn is not None and 'border' in legend_sections:
         border_title_patch = Patch(
-            color='white', label='{}:'.format(bordercolumn).upper()
+            color='white', label=f'{bordercolumn}:'.upper()
             )
         patches.append(border_title_patch)
         border_labels = df[bordercolumn].unique().tolist()
@@ -733,16 +736,18 @@ def save_figures(df, ax, fig, title, outputdir, maxlines=60):
     """
 
     ylocs = df.yvalue.unique().tolist()
+    number_of_rows = len(ylocs)
+    number_of_figures = round(len(ylocs)/maxlines)
 
-    print('total number of rows: {}'.format(len(ylocs)))
-    print('number of figures: {}'.format(round(len(ylocs)/maxlines)))
+    print(f'total number of rows: {number_of_rows}')
+    print(f'number of figures: {number_of_figures}')
 
     if outputdir.endswith('/'):
         outputdir = outputdir[:-1]
         print('stripped trailing / from outputdir')
     if os.path.exists(outputdir) is False:
         os.mkdir(outputdir)
-        print('created new directory: {}'.format(outputdir))
+        print(f'created new directory: {outputdir}')
 
     #resize and set layout
     plt.rcParams.update({'font.size': 10})
@@ -765,10 +770,9 @@ def save_figures(df, ax, fig, title, outputdir, maxlines=60):
 
         #ax.set_ylim((stop+1, start-1))
         ax.set_ylim((ymax+1, ymin-1))
-        ax.set_title('{} (rows {}-{})'.format(title, start, stop))
-        fig.savefig('{}/{} - {}-{}.png'.format(outputdir, title, start, stop),
-                    dpi=300)
-        print('Plotted lines {} to {}'.format(start, stop))
+        ax.set_title(f'{title} (rows {start}-{stop})')
+        fig.savefig(f'{outputdir}/{title} - {start}-{stop}.png',dpi=300)
+        print(f'Plotted lines {start} to {stop}')
         start += maxlines
 
     return

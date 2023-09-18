@@ -23,7 +23,7 @@ def case_1():
 
     df = gt.import_csv('./exampledata1.csv')
 
-    ax, fig = gt.gantt_chart(df, 
+    ax, fig = gt.gantt_chart(df,
                              title='Example 1',
                              fillcolumn="id",
                              cmap=colormaps['tab10'],
@@ -40,7 +40,7 @@ def case_2():
     """
     out = gt.giganttic('exampledata2.xlsx',
                         'case_2.png',
-                        'Example 2', 
+                        'Example 2',
                         default_fill = '#cccccc',
                         cmap_border = colormaps['viridis'],
                         bordercolumn = 'id',
@@ -70,14 +70,14 @@ def case_3():
     out = gt.giganttic(dummydata,'case_3.png','Example 3', connections = False,default_fill='pink')
     return out
 
-def case_4(): 
+def case_4():
     """ 
     CASE 4: manual file picking with a custom colourmap
     """
     out = gt.giganttic(
         cmap=['#F6D44D','#006F45','#0082CA','#C9252C','#002F56','#58585B'],
         fillcolumn='id')
-    return out 
+    return out
 
 def case_5():
     """ 
@@ -102,11 +102,11 @@ def case_5():
     df.loc[:,'name'] = df.id.map(str)+' - '+df.name
     ax, fig = gt.gantt_chart(df,
                              fillcolumn='id',
-                             cmap=['#F6D44D', 
-                                   '#006F45', 
-                                   '#0082CA', 
-                                   '#C9252C', 
-                                   '#002F56', 
+                             cmap=['#F6D44D',
+                                   '#006F45',
+                                   '#0082CA',
+                                   '#C9252C',
+                                   '#002F56',
                                    '#58585B'])
 
     return df, ax, fig
