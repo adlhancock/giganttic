@@ -633,7 +633,7 @@ def gantt_chart(df,
 
 
     """
-assertion_error = 'dataframe must have "name", "start", and "end" columns as a minimum'
+    assertion_error = 'dataframe must have "name", "start", and "end" columns as a minimum'
     assert all([x in df.columns for x in ['name', 'start', 'end']]), assertion_error
 
     # set the date range

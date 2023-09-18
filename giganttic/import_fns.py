@@ -15,7 +15,7 @@ from tkinter.filedialog import askopenfilename
 
 def import_csv(
     file,
-    headers=True, 
+    headers=True,
     columns=None,
     #**kwargs
     ):
@@ -114,7 +114,9 @@ def import_list(data,
 
     return dataframe
 
-def import_mpp_xml(filename,**kwargs):
+def import_mpp_xml(filename,
+                   #**kwargs
+                   ):
     """
     import a ms project xml file
     WARNING: this is definitely beta and has only been tried on one file!
@@ -154,12 +156,10 @@ def import_mpp_xml(filename,**kwargs):
     dataframe.Start = pd.to_datetime(dataframe.Start)
     dataframe.Finish = pd.to_datetime(dataframe.Finish)
 
-    dataframe = dataframe.rename(columns=dict(
-        UID='id',
-        Name='name',
-        Start='start',
-        Finish='end')
-        )
+    dataframe = dataframe.rename(columns={'UID':'id',
+                                          'Name':'name',
+                                          'Start':'start',
+                                          'Finish':'end'})
 
     dataframe.name = dataframe.WBS+' '+dataframe.name
     return dataframe

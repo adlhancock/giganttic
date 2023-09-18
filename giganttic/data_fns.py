@@ -57,7 +57,7 @@ def extract_milestones(df,
     ------
     df: pandas.DataFrame
     """
-    
+
     if milestones is None:
         milestones = ['T0','T1','T2','T3','T4','T5',
                       'R0','R1','R2','R3','R4']
@@ -148,7 +148,7 @@ def get_durations(df,milestone_cols):
             out = dt.now()
         else:
             out = func([x for x in row if x is not pd.NaT])
-        return out    
+        return out
 
     df['start'] = df[milestone_cols].apply(lambda x: startend(x,min),axis=1)
     df['end'] = df[milestone_cols].apply(lambda x: startend(x,max),axis=1)

@@ -95,4 +95,3 @@ def giganttic(inputfile='Auto',
         plt.savefigure(outputfile)
 
     return dataframe, axis, figure
-

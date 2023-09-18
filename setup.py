@@ -1,3 +1,5 @@
+"""setup file for giganttic """
+
 from setuptools import setup
 
 setup(
