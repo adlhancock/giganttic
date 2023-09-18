@@ -21,4 +21,4 @@ jobs:
     - name: Analysing the code with pylint
       working-directory: .github/workflows/
       run: |
-        pylint $(git ls-files '*.py') --rcfile ./pylintrc.txt
+        pylint $(git ls-files '*.py') --good-names=i,j,k,ex,Run,ax,fig,df
