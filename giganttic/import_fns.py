@@ -13,13 +13,10 @@ import xmltodict
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 
-
-#%% data import functions
-
 def import_csv(
     file,
     headers=True, 
-    columns=["id","name","start","end","level"],
+    columns=None,
     **kwargs
     ):
     '''
@@ -29,7 +26,8 @@ def import_csv(
 
     with open(file,'r') as f:
         csvdata = csv.reader(f)
-        nestedlist = [row for row in csvdata]
+        #nestedlist = [row for row in csvdata]
+        nestedlist = list(csvdata)
 
     events = nestedlist
 
@@ -40,7 +38,13 @@ def import_csv(
         df.columns = events[0]
     else:
         df = pd.DataFrame(events)
-        df.columns = columns
+        if columns is None:
+            columns = ["id","name","start","end"]
+            try:
+                df.columns = columns
+            except:
+                print(f'Assumed columns were {columns}')
+                raise
 
     if all(["start" in df.columns, "end" in df.columns]):
 
@@ -94,7 +98,8 @@ def import_excel(file,sheet=0,**kwargs):
 def import_list(data, **kwargs):
     """
     import a list and generate a dataframe
-    uses the first item as column names and trys to convert start and end to datetime
+    uses the first item as column names 
+    and trys to convert start and end to datetime
 
     Parameters
     ----------
@@ -134,11 +139,14 @@ def import_mpp_xml(filename,**kwargs):
 
 
     df_all['predecessors'] = df_all.loc[df_all.PredecessorLink.map(
-        lambda x: isinstance(x,dict)),'PredecessorLink'].map(lambda x: x['PredecessorUID'])
+        lambda x: isinstance(x,dict)),'PredecessorLink'].map(
+            lambda x: x['PredecessorUID'])
 
-    df_all.loc[df_all.predecessors.isna(),'predecessors'] = df_all.loc[df_all.PredecessorLink.map(
-        lambda x: isinstance(x,list)),'PredecessorLink'].map(
-            lambda x: ','.join([i['PredecessorUID'] for i in x]))
+    df_all.loc[
+        df_all.predecessors.isna(),'predecessors'] = df_all.loc[
+            df_all.PredecessorLink.map(
+                lambda x: isinstance(x,list)),'PredecessorLink'].map(
+                    lambda x: ','.join([i['PredecessorUID'] for i in x]))
 
     df = df_all[['UID','WBS','Name','Start','Finish','predecessors']].copy()
 

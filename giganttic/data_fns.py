@@ -40,8 +40,7 @@ def filter_data(df,column,regex):
     return df
 
 def extract_milestones(df,
-                       milestones=['T0','T1','T2','T3','T4','T5',
-                                   'R0','R1','R2','R3','R4']):
+                       milestones=None):
     """
     extracts milestone dates if the dataframe is
     a row of activities with columns for the milestone dates
@@ -51,20 +50,25 @@ def extract_milestones(df,
     df: pandas.DataFrame
 
     milestones: list, optional
-        The default is ['T0','T1','T2','T3','T4','T5','R0','R1','R2','R3','R4']
+        If None or not specified, will look for:
+            ['T0','T1','T2','T3','T4','T5','R0','R1','R2','R3','R4']
 
     Returns
     ------
     df: pandas.DataFrame
     """
-    #df = df.reindex()
+    
+    if milestones is None:
+        milestones = ['T0','T1','T2','T3','T4','T5',
+                      'R0','R1','R2','R3','R4']
     df['activity_id'] = df.index.map(lambda x: str(x).zfill(4))
     df['ordering'] = df.activity_id.str.zfill(4)
     df['row_type'] = 'Activity'
     for ms_number, ms in enumerate(milestones):
         ms_id = str(ms_number).zfill(4)
         activities_with_this_ms = df[pd.notna(df[ms])]
-        for row_number, row in activities_with_this_ms.iterrows():
+        #for row_number, row in activities_with_this_ms.iterrows():
+        for row in activities_with_this_ms:
             newrow = pd.DataFrame({
                 'row_type' : 'Milestone',
                 #'name' : row['name'] + ' ({})'.format(ms),
@@ -116,7 +120,6 @@ def get_durations(df,milestone_cols):
     df : pandas.DataFrame
 
     milestone_cols : TYPE
-
 
     Returns
     -------

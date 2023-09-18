@@ -89,17 +89,17 @@ def setup_figure(df,
 
 
     if rows > 200:
-        print('WARNING: trying to display {} rows. Very Unlikely to be legible!'.format(rows))
+        print(f'WARNING: trying to display {rows} rows. Very Unlikely to be legible!')
         fontsize = 3
         figuresize = [s, rows/2]
         figuredpi = 50
     if rows > 120:
-        print('WARNING: trying to display {} rows. Unlikely to be legible!'.format(rows))
+        print(f'WARNING: trying to display {rows} rows. Unlikely to be legible!')
         fontsize = 8
         figuresize = [s, rows/1.5]
         figuredpi = 60
     elif rows > 65:
-        print('WARNING: trying to display {} rows!'.format(rows))
+        print(f'WARNING: trying to display {rows} rows!')
         fontsize = 6
         figuresize = [s, rows/1.5]
         figuredpi = 60
@@ -117,10 +117,10 @@ def setup_figure(df,
         figuredpi = 100
         
     if figsize is not None:
-        print('manually setting figure size to {}'.format(figsize))
+        print(f'manually setting figure size to {figsize}')
         figuresize = figsize
     if dpi is not None:
-        print('manually setting figure dpi to {}'.format(dpi))
+        print(f'manually setting figure dpi to {dpi}')
         figuredpi = dpi
     if fontsize is not None:
         plt.rcParams['font.size'] = fontsize
@@ -309,7 +309,8 @@ def plot_event(yvalue,
                ax=None,
                **kwargs):
     """
-    plots a single event. if it's a milestone (zero-length event) try to add a label
+    plots a single event. 
+    if it's a milestone (zero-length event) try to add a label
     
     Parameters
     ----------
@@ -420,7 +421,8 @@ def plot_connections(df,
     
     assert 'predecessors' in df.columns, 'no predecessors defined in dataframe'
     df.predecessors = df.predecessors.str.split(',')
-    df.loc[df.predecessors.map(lambda x: x ==['']), 'predecessors'] = float('nan')
+    df.loc[df.predecessors.map(
+        lambda x: x ==['']), 'predecessors'] = float('nan')
     
     for row, event in df.loc[df.predecessors.notna()].iterrows():
         x_end = mdates.date2num(event.start)
@@ -441,7 +443,7 @@ def plot_connections(df,
             if x_end == x_start:
                 cs = "arc3, rad=0"
             else:
-                cs = "angle, angleA=-90, angleB=180, rad={}".format(line_radius)
+                cs = f"angle,angleA=-90,angleB=180,rad={line_radius}"
             ax.annotate("",
                         xy=[x_end, y_end], xycoords='data',
                         xytext=[x_start, y_start], textcoords='data',
@@ -527,7 +529,8 @@ def create_legend(ax,
         patches.append(fill_title_patch)
         fill_labels = df[fillcolumn].unique().tolist()
         for n, i in enumerate(fill_labels):
-            fillcolour = df.loc[df[fillcolumn]==i,'fillcolour'].unique().tolist()
+            fillcolour = df.loc[
+                df[fillcolumn]==i,'fillcolour'].unique().tolist()
             assert(len(fillcolour) == 1 ), 'inconsistent colours for legend'
             fillcolour = fillcolour[0]
             #print(fillcolour)
@@ -542,7 +545,8 @@ def create_legend(ax,
         patches.append(border_title_patch)
         border_labels = df[bordercolumn].unique().tolist()
         for n, i in enumerate(border_labels):
-            bordercolour = df.loc[df[bordercolumn]==i,'bordercolour'].unique().tolist()
+            bordercolour = df.loc[
+                df[bordercolumn]==i,'bordercolour'].unique().tolist()
             assert(len(bordercolour) == 1), 'inconsistent border colours for legend'
             bordercolour = bordercolour[0]
             #print(bordercolour)
@@ -557,7 +561,8 @@ def create_legend(ax,
         else:
             customcolour_legend_title = customcolour_field
         customcolours_title_patch = Patch(
-            color="white", label="{}:".format(customcolour_legend_title).upper()
+            color="white", 
+            label=f"{customcolour_legend_title}:".upper()
             )
         patches.append(customcolours_title_patch)
         for c in customcolours:
@@ -778,7 +783,8 @@ def save_figures(df, ax, fig, title, outputdir, maxlines=60):
         #ax.set_ylim((stop+1, start-1))
         ax.set_ylim((ymax+1, ymin-1))
         ax.set_title('{} (rows {}-{})'.format(title, start, stop))
-        fig.savefig('{}/{} - {}-{}.png'.format(outputdir, title, start, stop), dpi=300)
+        fig.savefig('{}/{} - {}-{}.png'.format(outputdir, title, start, stop), 
+                    dpi=300)
         print('Plotted lines {} to {}'.format(start, stop))
         start += maxlines
         
