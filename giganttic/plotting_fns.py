@@ -136,11 +136,6 @@ def setup_figure(df,
         num=title,
         )
 
-    #print('## DEBUG ##')
-    #print('rows:{} dpi:{} figsize:{} fontsize:{}'.format(rows,figuredpi,figuresize,fontsize))
-    #print('rows:{} dpi:{} figsize:{} fontsize:{}'.format(rows,fig.dpi,[fig.get_figwidth(),fig.get_figheight()],plt.rcParams['font.size']))
-    #print('\n')
-
     ax = fig.add_subplot(111)
     ax.set_title(title)
 
@@ -257,9 +252,7 @@ def get_colors(df,
 
 
     #df['bordercolour'] = df[bordercolumn].map(lambda x: allcolours[bordervalues.index(x)])
-    cmaps = dict(
-        fill=cmap,
-        border=cmap_border)
+    cmaps = {'fill':cmap,'border':cmap_border}
 
     return df, cmaps
 
@@ -422,31 +415,29 @@ def plot_connections(df,
 
         for predecessor in event.predecessors:
 
-            p = df[df.id == predecessor]
-            x_start = mdates.date2num(p.end)
-            y_start = p.yvalue
+            predecessor_row = df[df.id == predecessor]
+            x_start = mdates.date2num(predecessor_row.end)
+            y_start = predecessor_row.yvalue
             #print(x_start, y_start)
             if x_end < x_start:
-                lc = line_colour_error
-                ls = line_style_error
+                line_colour = line_colour_error
+                line_style = line_style_error
             else:
-                lc = line_colour
-                ls = line_style
+                line_colour = line_colour
+                line_style = line_style
             if x_end == x_start:
-                cs = "arc3, rad=0"
+                connection_style = "arc3, rad=0"
             else:
-                cs = f"angle,angleA=-90,angleB=180,rad={line_radius}"
+                connection_style = f"angle,angleA=-90,angleB=180,rad={line_radius}"
             ax.annotate("",
                         xy=[x_end, y_end], xycoords='data',
                         xytext=[x_start, y_start], textcoords='data',
-                        arrowprops=dict(
-                            arrowstyle=arrow_style,
-                            linestyle=ls,
-                            color=lc,
-                            shrinkA=8,
-                            shrinkB=8,
-                            connectionstyle=cs
-                            ),
+                        arrowprops={'arrowstyle':arrow_style,
+                                    'linestyle':line_style,
+                                    'color':line_colour,
+                                    'shrinkA':8,
+                                    'shrinkB':8,
+                                    'connectionstyle':connection_style},
                         zorder=100
                         )
 
@@ -566,7 +557,7 @@ def create_legend(ax,
         ax.legend(handles=patches, framealpha=0.5)
     else:
         print("no legend items generated")
-    return
+    return ax
 
 
 #%% gantt chart main function
