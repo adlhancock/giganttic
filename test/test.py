@@ -11,9 +11,7 @@ import os
 import sys
 from matplotlib import pyplot, colormaps
 
-
 sys.path.insert(0,os.path.abspath('..'))
-
 import giganttic as gt
 
 
@@ -22,19 +20,17 @@ def case_1():
     """
     CASE 1 - import, plot and save separately.
     """
-    
 
     df = gt.import_csv('./exampledata1.csv')
 
     ax, fig = gt.gantt_chart(df, 
                              title='Example 1',
                              fillcolumn="id",
-                             cmap = colormaps['tab10'],
+                             cmap=colormaps['tab10'],
                              connections=True,
                              nowline = True)
     fig.savefig('case_1.png')
     fig.show()
-    
     out = df,ax,fig
     return out
 
@@ -51,13 +47,13 @@ def case_2():
                         connections = False,
                         legend = True,
                         nowline = False)
-    return out 
+    return out
 
 def case_3():
     """
     CASE 3 all in one with a list
     """
-    
+
     dummydata = [
         ["id","name","start","end","level"],
         [1,"task 1","31-Jan-2023","12/12/2028",1],
@@ -112,9 +108,8 @@ def case_5():
                                    '#C9252C', 
                                    '#002F56', 
                                    '#58585B'])
-    
+
     return df, ax, fig
-    
 
 #%% MAIN
 pyplot.close('all')
@@ -123,4 +118,3 @@ out_2 = case_2()
 out_3 = case_3()
 out_4 = case_4()
 out_5 = case_5()
-
