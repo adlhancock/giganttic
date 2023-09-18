@@ -19,10 +19,10 @@ from .plotting_fns import gantt_chart
 
 #%% all in one function
 
-def giganttic(inputfile: str | list='Auto',
-              outputfile: str='Auto',
-              title: str='Auto',
-              filter: str | None=None,
+def giganttic(inputfile='Auto',
+              outputfile='Auto',
+              title='Auto',
+              filter_string=None,
               **kwargs):
     
     """
@@ -60,7 +60,7 @@ def giganttic(inputfile: str | list='Auto',
     if inputfile == 'Auto':
         inputfile = gim.choosefile()
         
-    if type(inputfile) is list:
+    if isinstance(inputfile, list):
         df = gim.import_list(inputfile)
     elif inputfile.endswith('.csv'):
         df = gim.import_csv(inputfile,**kwargs)
@@ -82,8 +82,8 @@ def giganttic(inputfile: str | list='Auto',
         title = defaultstring
 
     #filter and manipulate the data
-    if filter is not None:
-        df = filter_data(df,filter[0],filter[1])
+    if filter_string is not None:
+        df = filter_data(df,filter_string[0],filter_string[1])
         
     # plot the gantt chart
     ax, fig = gantt_chart(df,title=title,**kwargs)
@@ -92,7 +92,7 @@ def giganttic(inputfile: str | list='Auto',
     # save the figure
     if outputfile is not None:
         if outputfile == 'Auto':
-            outputfile = '{}.png'.format(defaultstring)
+            outputfile = f'{defaultstring}.png'
         plt.savefig(outputfile)
 
     return df, ax, fig

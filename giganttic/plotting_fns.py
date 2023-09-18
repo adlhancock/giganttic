@@ -63,7 +63,7 @@ def setup_figure(df,
         DESCRIPTION.
 
     """
-    
+
     # resize and rescale dependent on number of rows
     if 'yvalue' in df.columns:
         rows = len(df.yvalue.unique())
@@ -72,12 +72,12 @@ def setup_figure(df,
         rows = len(set(yvalues[0]))
     else:
         rows = len(df)
-    
+
     if isinstance(figsize, float) or isinstance(figsize, int):
         s = figsize
     else:
         s = 10 # size of figure short side, in inches
-        
+
     if figratio == 'screen':
         ratio = 1.78
     elif figratio == 'print':
@@ -115,7 +115,7 @@ def setup_figure(df,
         fontsize = 10
         figuresize = [s*2, rows] # thin landscape ratio
         figuredpi = 100
-        
+
     if figsize is not None:
         print(f'manually setting figure size to {figsize}')
         figuresize = figsize
@@ -125,22 +125,22 @@ def setup_figure(df,
     if fontsize is not None:
         plt.rcParams['font.size'] = fontsize
 
-    
+
     plt.rcParams['font.size'] = fontsize
     plt.rcParams['figure.dpi'] = figuredpi
     plt.rcParams['figure.figsize'] = figuresize
-    
+
     fig = plt.figure(
         figsize=figuresize,
         dpi=figuredpi,
         num=title,
         )
-    
+
     #print('## DEBUG ##')
     #print('rows:{} dpi:{} figsize:{} fontsize:{}'.format(rows,figuredpi,figuresize,fontsize))
     #print('rows:{} dpi:{} figsize:{} fontsize:{}'.format(rows,fig.dpi,[fig.get_figwidth(),fig.get_figheight()],plt.rcParams['font.size']))
     #print('\n')
-    
+
     ax = fig.add_subplot(111)
     ax.set_title(title)
 
@@ -158,7 +158,7 @@ def setup_figure(df,
     if dates == None:
         dates = [dt.now(), dt(2050, 1, 1)]
     xlimits = (mdates.date2num(d) for d in dates)
-    plt.xlim(xlimits)        
+    plt.xlim(xlimits)
 
     if yvalues == None:
         ylimits = (rows, -1)
@@ -177,7 +177,7 @@ def setup_figure(df,
 
     return ax, fig
 
-#%% get colors    
+#%% get colors
 def get_colors(df,
                fillcolumn,
                bordercolumn,
@@ -189,7 +189,7 @@ def get_colors(df,
                **kwargs):
     """
     gets colours for the dataframe
-    
+
     Parameters
     ----------
 
@@ -229,16 +229,16 @@ def get_colors(df,
            cmap_border = colors.ListedColormap(cmap_border, 'cmap_border')
     else:
         cmap_border = cmap
-        
+
     if recolour is True:
         df['fillcolour'] = None
         df['bordercolour'] = None
 
 
 
-    #set the fill colour    
+    #set the fill colour
     if fillcolumn is not None:
-        
+
         #fillvalue = event[fillcolumn]
         fillvalues = df[fillcolumn].unique().tolist()
         if len(fillvalues) < len(cmap.colors)*0.5 or len(cmap.colors) > 30:
@@ -257,7 +257,7 @@ def get_colors(df,
     #set the border colour
     if bordercolumn is not None:
         bordervalues = df[bordercolumn].unique().tolist()
-        df.bordercolour = df[bordercolumn].map( 
+        df.bordercolour = df[bordercolumn].map(
             lambda x: cmap_border(bordervalues.index(x)/len(bordervalues)))
     else:
         df.bordercolor = default_border
@@ -267,22 +267,22 @@ def get_colors(df,
     cmaps = dict(
         fill=cmap,
         border=cmap_border)
-    
+
     return df, cmaps
 
 #%% add milestone labels
 def add_milestone_labels(df):
-    """ 
-    add milestone labels to the middle of any bars that are milestones (shrug) 
-    
+    """
+    add milestone labels to the middle of any bars that are milestones (shrug)
+
     Parameters
     ----------
     df: pandas.DataFrame
-    
+
     Returns
     -------
     None
-    
+
     """
     zorder = len(df)+10
 
@@ -297,7 +297,7 @@ def add_milestone_labels(df):
                 c='white',
                 va='center',
                 ha='center')
-            
+
     return
 
 
@@ -309,31 +309,31 @@ def plot_event(yvalue,
                ax=None,
                **kwargs):
     """
-    plots a single event. 
+    plots a single event.
     if it's a milestone (zero-length event) try to add a label
-    
+
     Parameters
     ----------
     yvalue: float
-    
+
     event: single-row of a dataframe
-    
+
     fill_colour: str
-    
+
     border_colour: str
-    
+
     ax: matplotlib.axes._axes.Axes
-    
+
     **kwargs
-    
-    
+
+
     Returns
     -------
-    shape: matplotlib.patches.Rectangle 
+    shape: matplotlib.patches.Rectangle
         may be invisible, if a milestone, which will just be ploted
         using ax.plot using a "D" marker
-    
-    
+
+
     """
     start = mdates.date2num(event["start"])
     end = mdates.date2num(event["end"])
@@ -342,7 +342,7 @@ def plot_event(yvalue,
     y = yvalue
     height = 0.7
     anchor = (x, y-height/2)
-    
+
     # plot as a zero length milestone
     if width == 0:
         ax.plot(x, y,
@@ -356,11 +356,11 @@ def plot_event(yvalue,
             anchor,
             width=0,
             height=0)
-        
+
         # add a text label if possible
         try:
             if pd.notna(event.milestone):
-                try: 
+                try:
                     mslabel = '  {}'.format(str(event.milestone))
                 except:
                     mslabel = '  {}'.format('??')
@@ -382,9 +382,9 @@ def plot_event(yvalue,
     return shape
 
 #%% plot connections
-def plot_connections(df, 
-                     ax, 
-                     line_colour="grey", 
+def plot_connections(df,
+                     ax,
+                     line_colour="grey",
                      **kwargs):
     """
     Add connection arrows.
@@ -397,17 +397,17 @@ def plot_connections(df,
 
     line_colour : str, optional
         The default is "grey".
-    **kwargs : 
-        
+    **kwargs :
+
 
     Returns
     -------
     df : dataframe
-    
+
     ax : matplotlib.axes._axes.Axes
 
     """
-    
+
     # some default variables
     if 'arrow_style' not in kwargs:
         arrow_style = '->'
@@ -417,19 +417,19 @@ def plot_connections(df,
     line_style_error = ':'
     if 'line_radius' not in kwargs:
         line_radius = 8
-    
-    
+
+
     assert 'predecessors' in df.columns, 'no predecessors defined in dataframe'
     df.predecessors = df.predecessors.str.split(',')
     df.loc[df.predecessors.map(
         lambda x: x ==['']), 'predecessors'] = float('nan')
-    
+
     for row, event in df.loc[df.predecessors.notna()].iterrows():
         x_end = mdates.date2num(event.start)
         y_end = event.yvalue
-                
+
         for predecessor in event.predecessors:
-                        
+
             p = df[df.id == predecessor]
             x_start = mdates.date2num(p.end)
             y_start = p.yvalue
@@ -457,7 +457,7 @@ def plot_connections(df,
                             ),
                         zorder=100
                         )
-    
+
     return df, ax
 
 #%% create legend
@@ -471,55 +471,55 @@ def create_legend(ax,
                   customcolour_field=None,
                   **kwargs
                   ):
-    
+
     """ add a legend
-    
+
     Parameters
     ----------
     ax: matplotlib.axes._axes.Axes
-    
+
     fig: matplotlib.figure.Figure
-    
+
     df: pandas.DataFrame
-    
+
     legend_sections: list, optional
         Default is ['fill', 'border', 'customcolours']
-    
+
     **kwargs
-    
-    
+
+
     Returns
     -------
-    
+
     ax:
-    
+
     fig:
-    
+
     """
-    
+
     cmap = cmaps['fill']
     if 'border' in cmaps:
         cmap_border = cmaps['border']
     else:
         cmap_border = None
-        
-    '''    
+
+    '''
     if isinstance(cmap, list):
         cmap = colors.ListedColormap(cmap, 'cmap')
-    
+
     if cmap_border is not None:
         if isinstance(cmap_border, list):
            cmap_border = colors.ListedColormap(cmap_border, 'cmap_border')
     else:
         cmap_border = cmap
     '''
-    
+
     # choose which bits of the legend to include
     if 'legend_sections' in kwargs:
         legend_sections = kwargs['legend_sections']
     else:
         legend_sections = ['fill', 'border', 'customcolours']
-    
+
     patches = []
     # draw the fill column section of the legend
     if fillcolumn is not None and 'fill' in legend_sections:
@@ -536,8 +536,8 @@ def create_legend(ax,
             #print(fillcolour)
             patch = Patch(color=fillcolour, edgecolor=None, label=i)
             patches.append(patch)
-    
-    # draw the border colour section of the legend        
+
+    # draw the border colour section of the legend
     if bordercolumn is not None and 'border' in legend_sections:
         border_title_patch = Patch(
             color='white', label='{}:'.format(bordercolumn).upper()
@@ -550,25 +550,25 @@ def create_legend(ax,
             assert(len(bordercolour) == 1), 'inconsistent border colours for legend'
             bordercolour = bordercolour[0]
             #print(bordercolour)
-            
+
             patch = Patch(facecolor='white', edgecolor=bordercolour, label=i)
             patches.append(patch)
-    
-    # draw the custom colours section of the legend        
+
+    # draw the custom colours section of the legend
     if customcolours is not None and 'customcolours' in legend_sections:
         if 'customcolour_legend_title' in kwargs:
             customcolour_legend_title = kwargs['customcolour_legend_title']
         else:
             customcolour_legend_title = customcolour_field
         customcolours_title_patch = Patch(
-            color="white", 
+            color="white",
             label=f"{customcolour_legend_title}:".upper()
             )
         patches.append(customcolours_title_patch)
         for c in customcolours:
             patch = Patch(color=customcolours[c], label=c)
             patches.append(patch)
-            
+
     if len(patches) != 0:
         plt.rcParams['legend.framealpha'] = 0.5
         ax.legend(handles=patches, framealpha=0.5)
@@ -598,7 +598,7 @@ def gantt_chart(df,
     Parameters
     ----------
     df : DataFrame
-        
+
     title : str, optional
         The default is "Gantt Chart".
     fillcolumn : str, optional
@@ -615,7 +615,7 @@ def gantt_chart(df,
         Format [start_date, end_date]
         The default is None.
     legend : TYPE, optional
-        add a legend. 
+        add a legend.
         The default is False.
     nowline : TYPE, optional
         add a vertical line at today's date
@@ -631,7 +631,7 @@ def gantt_chart(df,
         clip long labels with '...'
         The default is 100.
     **kwargs : TYPE
-        
+
 
     Returns
     -------
@@ -645,12 +645,12 @@ def gantt_chart(df,
     assert all([x in df.columns for x in ['name', 'start', 'end']]), 'dataframe must have "name", "start", and "end" columns as a minimum'
 
     # set the date range
-    if dates is None: 
+    if dates is None:
         dates = (min(df.start[df.start.notna()]), max(df.end[df.end.notna()]))
-    if dates[0] == dates[1]: 
+    if dates[0] == dates[1]:
         dates = [dt(2022, 1, 1), dt(2050, 1, 1)]
-   
-                
+
+
     # set up figure
     if yvalues is None:
         ylocs = list(range(len(df)))
@@ -660,21 +660,21 @@ def gantt_chart(df,
 
     else:
         ylocs, ylabels = yvalues
-    
+
     df['yvalue'] = ylocs
 
-    ax, fig = setup_figure(df, 
-                           dates=dates, 
-                           yvalues=yvalues, 
-                           title=title, 
+    ax, fig = setup_figure(df,
+                           dates=dates,
+                           yvalues=yvalues,
+                           title=title,
                            **kwargs)
 
     # get the colours
     df, cmaps = get_colors(df, fillcolumn, bordercolumn, **kwargs)
-    
-    # reset the index 
+
+    # reset the index
     df = df.reset_index(drop=True)
-    
+
     # iterate through events
     for row, event in df.iterrows():
 
@@ -683,24 +683,24 @@ def gantt_chart(df,
             for item in customcolours:
                 if item in str(event[customcolour_field]):
                     event.fillcolour = customcolours[item]
-            
+
         # create and plot shapes
         yvalue = ylocs[row]
-        
+
         # create and add the shape
-        shape = plot_event(yvalue, 
+        shape = plot_event(yvalue,
                            event,
                            fill_colour=event.fillcolour,
-                           border_colour=event.bordercolour, 
+                           border_colour=event.bordercolour,
                            ax=ax)
         ax.add_patch(shape)
-    
+
     # add a "now" line
     if nowline is True:
         xs = [mdates.date2num(dt.now())]*2
         ys = [max(ylocs)+1, min(ylocs)-1]
         ax.plot(xs, ys, color=nowline_colour, linestyle='--')
-    
+
     # add connection arrows
     if connections is True and 'predecessors' in df.columns:
         try:
@@ -708,7 +708,7 @@ def gantt_chart(df,
         except:
             print('could not add connections')
             #raise
-        
+
     # add a legend
     if legend is True:
         create_legend(ax, fig, df,
@@ -725,8 +725,8 @@ def gantt_chart(df,
 
 #%% save figures
 def save_figures(df, ax, fig, title, outputdir, maxlines=60):
-    """ Splits up an existing gantt chart into separate images, 
-    with a maximum number of rows given by maxlines and saves them. 
+    """ Splits up an existing gantt chart into separate images,
+    with a maximum number of rows given by maxlines and saves them.
 
     Parameters
     ----------
@@ -748,19 +748,19 @@ def save_figures(df, ax, fig, title, outputdir, maxlines=60):
     None.
 
     """
-    
+
     ylocs = df.yvalue.unique().tolist()
-        
+
     print('total number of rows: {}'.format(len(ylocs)))
     print('number of figures: {}'.format(round(len(ylocs)/maxlines)))
-    
+
     if outputdir.endswith('/'):
         outputdir = outputdir[:-1]
         print('stripped trailing / from outputdir')
     if os.path.exists(outputdir) is False:
         os.mkdir(outputdir)
         print('created new directory: {}'.format(outputdir))
-    
+
     #resize and set layout
     plt.rcParams.update({'font.size': 10})
     fig.set_dpi(60)
@@ -770,22 +770,22 @@ def save_figures(df, ax, fig, title, outputdir, maxlines=60):
 
     # set the y axis limits to chunks of the whole and save individual files
     start, stop = 0, 0
-    
+
     while stop < len(ylocs):
         stop = start + maxlines
-        if stop > len(ylocs): 
+        if stop > len(ylocs):
             stop = len(ylocs)
             if stop - start < 5:
                 start = stop - 10
         ymin = ylocs[start]
         ymax = ylocs[stop-1]
-        
+
         #ax.set_ylim((stop+1, start-1))
         ax.set_ylim((ymax+1, ymin-1))
         ax.set_title('{} (rows {}-{})'.format(title, start, stop))
-        fig.savefig('{}/{} - {}-{}.png'.format(outputdir, title, start, stop), 
+        fig.savefig('{}/{} - {}-{}.png'.format(outputdir, title, start, stop),
                     dpi=300)
         print('Plotted lines {} to {}'.format(start, stop))
         start += maxlines
-        
-    return 
+
+    return

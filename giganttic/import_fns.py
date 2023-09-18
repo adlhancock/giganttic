@@ -17,7 +17,7 @@ def import_csv(
     file,
     headers=True, 
     columns=None,
-    **kwargs
+    #**kwargs
     ):
     '''
     headers: if the first line of the csv file has headers
@@ -34,30 +34,33 @@ def import_csv(
     # create dataframe
 
     if headers is True:
-        df = pd.DataFrame(events[1:])
-        df.columns = events[0]
+        dataframe = pd.DataFrame(events[1:])
+        dataframe.columns = events[0]
     else:
-        df = pd.DataFrame(events)
+        dataframe = pd.DataFrame(events)
         if columns is None:
             columns = ["id","name","start","end"]
             try:
-                df.columns = columns
+                dataframe.columns = columns
             except:
                 print(f'Assumed columns were {columns}')
                 raise
 
-    if all(["start" in df.columns, "end" in df.columns]):
+    if all(["start" in dataframe.columns, "end" in dataframe.columns]):
 
-        #df.start = pd.to_datetime(df.start,dayfirst=True,format='mixed')
-        #df.end = pd.to_datetime(df.end,dayfirst=True,format='mixed')
-        df.start = pd.to_datetime(df.start,dayfirst=True,format='%d/%m/%Y')
-        df.end = pd.to_datetime(df.end,dayfirst=True,format='%d/%m/%Y')
+        #dataframe.start = pd.to_datetime(dataframe.start,dayfirst=True,format='mixed')
+        #dataframe.end = pd.to_datetime(dataframe.end,dayfirst=True,format='mixed')
+        dataframe.start = pd.to_datetime(dataframe.start,dayfirst=True,format='%d/%m/%Y')
+        dataframe.end = pd.to_datetime(dataframe.end,dayfirst=True,format='%d/%m/%Y')
     else:
-        print("{}: WARNING - no start and end values defined".format(__name__))        
+        print(f"{__name__}: WARNING - no start and end values defined")
 
-    return df
+    return dataframe
 
-def import_excel(file,sheet=0,**kwargs):
+def import_excel(file,
+                 sheet=0,
+                 #**kwargs
+                 ):
     """
     import an excel file, defaulting to the first worksheet
 
@@ -71,31 +74,25 @@ def import_excel(file,sheet=0,**kwargs):
 
     Returns
     -------
-    df: pandas.DataFrame
+    dataframe: pandas.DataFrame
 
     """
 
-    df = pd.read_excel(file, sheet)
+    dataframe = pd.read_excel(file, sheet)
 
-    if all(["start" in df.columns, "end" in df.columns]):
-        #df.start = pd.to_datetime(df.start,dayfirst=True,format='mixed')
-        #df.end = pd.to_datetime(df.end,dayfirst=True,format='mixed')
-        df.start = pd.to_datetime(df.start,dayfirst=True)
-        df.end = pd.to_datetime(df.end,dayfirst=True)
+    if all(["start" in dataframe.columns, "end" in dataframe.columns]):
+        #dataframe.start = pd.to_datetime(dataframe.start,dayfirst=True,format='mixed')
+        #dataframe.end = pd.to_datetime(dataframe.end,dayfirst=True,format='mixed')
+        dataframe.start = pd.to_datetime(dataframe.start,dayfirst=True)
+        dataframe.end = pd.to_datetime(dataframe.end,dayfirst=True)
     else:
-        print("{}: WARNING - no start and end values defined".format(__name__))
+        print(f"{__name__}: WARNING - no start and end values defined")
 
-    '''    
-    try:
-        df['id'] = df['id'].astype(str)
-    except:
-        df['id'] = df.index.astype(str)    
-    '''
-    #df.columns = df.columns.str.lower()
-    #print(df)
-    return df
+    return dataframe
 
-def import_list(data, **kwargs):
+def import_list(data,
+                #**kwargs
+                ):
     """
     import a list and generate a dataframe
     uses the first item as column names 
@@ -107,15 +104,15 @@ def import_list(data, **kwargs):
 
     Returns
     -------
-    df: pandas.DataFrame
+    dataframe: pandas.DataFrame
 
     """
-    df = pd.DataFrame(data[1:],columns=data[0])
-    df.columns = df.columns.str.lower()
-    df.start = pd.to_datetime(df.start,dayfirst=True)
-    df.end = pd.to_datetime(df.end,dayfirst=True)
+    dataframe = pd.DataFrame(data[1:],columns=data[0])
+    dataframe.columns = dataframe.columns.str.lower()
+    dataframe.start = pd.to_datetime(dataframe.start,dayfirst=True)
+    dataframe.end = pd.to_datetime(dataframe.end,dayfirst=True)
 
-    return df
+    return dataframe
 
 def import_mpp_xml(filename,**kwargs):
     """
@@ -128,7 +125,7 @@ def import_mpp_xml(filename,**kwargs):
 
     Returns
     -------
-    df: pandas.DataFrame
+    dataframe: pandas.DataFrame
 
     """
 
@@ -148,24 +145,24 @@ def import_mpp_xml(filename,**kwargs):
                 lambda x: isinstance(x,list)),'PredecessorLink'].map(
                     lambda x: ','.join([i['PredecessorUID'] for i in x]))
 
-    df = df_all[['UID','WBS','Name','Start','Finish','predecessors']].copy()
+    dataframe = df_all[['UID','WBS','Name','Start','Finish','predecessors']].copy()
 
     #datefmt = '%Y-%m-%dT%H:%M:%S'
 
-    #df.Start = pd.to_datetime(df.Start,format='mixed')
-    #df.Finish = pd.to_datetime(df.Finish,format='mixed')
-    df.Start = pd.to_datetime(df.Start)
-    df.Finish = pd.to_datetime(df.Finish)
+    #dataframe.Start = pd.to_datetime(dataframe.Start,format='mixed')
+    #dataframe.Finish = pd.to_datetime(dataframe.Finish,format='mixed')
+    dataframe.Start = pd.to_datetime(dataframe.Start)
+    dataframe.Finish = pd.to_datetime(dataframe.Finish)
 
-    df = df.rename(columns=dict(
+    dataframe = dataframe.rename(columns=dict(
         UID='id',
         Name='name',
         Start='start',
         Finish='end')
         )
 
-    df.name = df.WBS+' '+df.name
-    return df
+    dataframe.name = dataframe.WBS+' '+dataframe.name
+    return dataframe
 
 def choosefile(path='./'):
     """
