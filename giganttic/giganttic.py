@@ -6,6 +6,7 @@ a matplotlib gantt chart tool using patches,
 specifically designed for large projects
 """
 
+import os
 import matplotlib.pyplot as plt
 
 #import giganttic.import_fns as gim
@@ -15,9 +16,6 @@ import matplotlib.pyplot as plt
 from . import import_fns as gim
 from .data_fns import filter_data
 from .plotting_fns import gantt_chart
-
-import os
-
 
 #%% all in one function
 
@@ -98,5 +96,4 @@ def giganttic(inputfile: str | list = 'Auto',
         plt.savefig(outputfile)
 
     return df, ax, fig
-
 

@@ -13,12 +13,9 @@ from datetime import datetime as dt
 
 def get_datestring():
     timenow = dt.now()
-    
     return timenow.strftime("%Y%m%d")
 
-
 #%% data modification
-
 def filter_data(df,column,regex):
     """
     filters dataframe and reindexes
@@ -36,7 +33,6 @@ def filter_data(df,column,regex):
     -------
     df : TYPE
         DESCRIPTION.
-
     """
     df = df[df[column].str.contains(
                 regex, regex=True,na=False)].reset_index(drop=True)
@@ -44,7 +40,8 @@ def filter_data(df,column,regex):
 
 def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1','R2','R3','R4']):
     """ 
-    extracts milestone dates if the dataframe is a row of activities with columns for the milestone dates
+    extracts milestone dates if the dataframe is 
+    a row of activities with columns for the milestone dates
     
     Parameters
     ---------
@@ -56,7 +53,6 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
     Returns
     ------
     df: pandas.DataFrame
-    
     """
     #df = df.reindex()
     df['activity_id'] = df.index.map(lambda x: str(x).zfill(4))
@@ -89,7 +85,8 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
 def flatten_milestones(df):
     """ 
     returns the dataframe with additional columns ylabel and yvalue 
-    which clears the milestone labels and puts them in a single line below the main task bar 
+    which clears the milestone labels and puts 
+    them in a single line below the main task bar 
     
     Parameters
     ----------
@@ -156,3 +153,4 @@ def get_durations(df,milestone_cols):
     
     df['duration'] = df.end-df.start
     return df
+    
