@@ -19,14 +19,15 @@ from matplotlib.patches import Rectangle, Patch
 
 #%% Setup figure
 def setup_figure(df,
-                 dates: list | None=None,
-                 yvalues: list | None=None,
+                 dates=None,
+                 yvalues=None,
                  title="Gantt Chart",
-                 fontsize: int | float=None,
-                 figsize: list | int | float | None=None,
+                 fontsize=None,
+                 figsize=None,
                  dpi: int=None,
                  figratio: str='print',
-                 **kwargs):
+                 #**kwargs
+                 ):
     """ sets up the figure.
 
     Parameters
@@ -270,7 +271,6 @@ def add_milestone_labels(df):
     None
 
     """
-    
     zorder = len(df)+10
     for row, event in df.iterrows():
         if event.end != event.start:
@@ -397,15 +397,11 @@ def plot_connections(df,
     """
 
     # some default variables
-    if 'arrow_style' not in kwargs:
-        arrow_style = '->'
-    if 'line_colour_error' not in kwargs:
-        line_colour_error = 'red'
+    arrow_style = kwargs.get('arrow_style','->')
+    line_colour_error = kwargs.get('line_colour_error','red')
     line_style = '-'
     line_style_error = ':'
-    if 'line_radius' not in kwargs:
-        line_radius = 8
-
+    line_radius = kwargs.get('line_radius',8)
 
     assert 'predecessors' in df.columns, 'no predecessors defined in dataframe'
     df.predecessors = df.predecessors.str.split(',')
@@ -425,9 +421,6 @@ def plot_connections(df,
             if x_end < x_start:
                 line_colour = line_colour_error
                 line_style = line_style_error
-            else:
-                line_colour = line_colour
-                line_style = line_style
             if x_end == x_start:
                 connection_style = "arc3, rad=0"
             else:
@@ -482,14 +475,13 @@ def create_legend(ax,
     fig:
 
     """
-
+    
+    '''
     cmap = cmaps['fill']
     if 'border' in cmaps:
         cmap_border = cmaps['border']
     else:
         cmap_border = None
-
-    '''
     if isinstance(cmap, list):
         cmap = colors.ListedColormap(cmap, 'cmap')
 
@@ -501,10 +493,8 @@ def create_legend(ax,
     '''
 
     # choose which bits of the legend to include
-    if 'legend_sections' in kwargs:
-        legend_sections = kwargs['legend_sections']
-    else:
-        legend_sections = ['fill', 'border', 'customcolours']
+    legend_sections = kwargs.get('legend_sections',
+                                 ['fill', 'border', 'customcolours'])
 
     patches = []
     # draw the fill column section of the legend
@@ -542,10 +532,8 @@ def create_legend(ax,
 
     # draw the custom colours section of the legend
     if customcolours is not None and 'customcolours' in legend_sections:
-        if 'customcolour_legend_title' in kwargs:
-            customcolour_legend_title = kwargs['customcolour_legend_title']
-        else:
-            customcolour_legend_title = customcolour_field
+        customcolour_legend_title = kwargs.get(
+            'customcolour_legend_title',customcolour_field)
         customcolours_title_patch = Patch(
             color="white",
             label=f"{customcolour_legend_title}:".upper()
@@ -628,7 +616,7 @@ def gantt_chart(df,
 
     """
     assertion_error = 'dataframe must have "name", "start", and "end" columns as a minimum'
-    assert all([x in df.columns for x in ['name', 'start', 'end']]), assertion_error
+    assert all(x in df.columns for x in ['name', 'start', 'end']), assertion_error
 
     # set the date range
     if dates is None:
@@ -639,9 +627,10 @@ def gantt_chart(df,
 
     # set up figure
     if yvalues is None:
+        maxlength = max_label_length
         ylocs = list(range(len(df)))
         ylabels = df.name.map(
-            lambda x: str(x)[:max_label_length-5]+'...' if len(str(x)) > max_label_length else str(x))
+            lambda x: str(x)[:maxlength-5]+'...' if len(str(x)) > maxlength else str(x))
         yvalues = [ylocs, ylabels]
 
     else:
