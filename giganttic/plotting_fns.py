@@ -22,11 +22,7 @@ def setup_figure(df,
                  dates=None,
                  yvalues=None,
                  title="Gantt Chart",
-                 fontsize=None,
-                 figsize=None,
-                 dpi: int=None,
-                 figratio: str='print',
-                 #**kwargs
+                 **kwargs
                  ):
     """ sets up the figure.
 
@@ -65,7 +61,7 @@ def setup_figure(df,
 
     """
 
-    # resize and rescale dependent on number of rows
+    # work out how many rows are in the figure
     if 'yvalue' in df.columns:
         rows = len(df.yvalue.unique())
         #print('DEBUG: rows set by df.yvalue')
@@ -73,67 +69,99 @@ def setup_figure(df,
         rows = len(set(yvalues[0]))
     else:
         rows = len(df)
-
-    if isinstance(figsize, (float,int)):
-        s = figsize
+    
+    # set figure ratio
+    figure_ratio = kwargs.get('figure_ratio','print')
+    if figure_ratio == 'screen':
+        ratio = 1.78 # assuming widescreen
+    elif figure_ratio == 'print':
+        ratio = 1.414 # A4 ratio is sqrt 2
+    elif isinstance(figure_ratio, (float, int)):
+        ratio = figure_ratio
     else:
-        s = 10 # size of figure short side, in inches
+        raise AssertionError('figure ratio must be "screen", "print", or float')
 
-    if figratio == 'screen':
-        ratio = 1.78
-    elif figratio == 'print':
-        ratio = 1.5 # A4 ratio is sqrt 2, but using adjustment ratio to fix odd distortion
-    elif isinstance(figratio, (float, int)):
-        ratio = figratio
+    short_side = 10 # default size of figure short side, in inches
+    figure_sizes = {
+        'tiny':{
+            'max_rows':10,
+            'font_size':10,
+            'figure_width':short_side*2,
+            'figure_height':rows, # thin landscape ratio
+            'figure_dpi':100},
+        'small':{
+            'max_rows':40,
+            'font_size':10,
+            'figure_width':short_side*ratio, 
+            'figure_height':short_side, # landscape ratio
+            'figure_dpi':100},
+        'medium':{
+            'max_rows':65,
+            'font_size':8,
+            'figure_width':short_side,
+            'figure_height':short_side*ratio, # portrait ratio
+            'figure_dpi':100},
+        'large':{
+            'max_rows':120,
+            'font_size':6,
+            'figure_width':short_side,
+            'figure_height':rows/1.5, # tall portrait ratio
+            'figure_dpi':80},
+        'huge':{
+            'max_rows':240,
+            'font_size':4,
+            'figure_width':short_side,
+            'figure_height':rows/2, # very tall portrait ratio
+            'figure_dpi':70},
+        'nearly_illegible':{
+            'max_rows':500,
+            'font_size':3,
+            'figure_width':short_side/1.5,
+            'figure_height':rows/2.5, # try to squeeze it all in
+            'figure_dpi':60},
+        'default':{
+            'max_rows':'None',
+            'font_size':8,
+            'figure_width':6,
+            'figure_height':4, # 6:4 modest size
+            'figure_dpi':100}
+    }
+    
+    figure_size = kwargs.get('figure_size',None)
+
+    if isinstance(figure_size,list):
+        figure_width, figure_height = figure_size
+        figure_size = 'manual'
     else:
-        raise AssertionError('figratio must be "screen", "print", or float')
+        # use the max_row values in the figure_sizes dict to set figure_size
+        size_names = list(figure_sizes.keys())
+        size_names.remove('default')
+        max_row_values = [figure_sizes[size_name]['max_rows'] 
+                          for size_name in size_names]
+        size_dictionary = dict(zip(max_row_values,size_names))    
+        for max_size in size_dictionary:
+            if rows < max_size:
+                figure_size = size_dictionary[max_size]
+
+    # apply the figure dimensions
+    figure_dimensions = figure_sizes.get(figure_size,
+                                         figure_sizes['default'])
+
+    #print(f'DEBUG:{rows:<5} {figure_size:<10} {figure_dimensions}')
+    
+    figure_width = figure_dimensions.get('figure_width')
+    figure_height = figure_dimensions.get('figure_height')
+    font_size = kwargs.get('font_size',figure_dimensions.get('font_size'))
+    figure_dpi = kwargs.get('figure_dpi',figure_dimensions.get('figure_dpi'))
 
 
-    if rows > 200:
-        print(f'WARNING: trying to display {rows} rows. Very Unlikely to be legible!')
-        fontsize = 3
-        figuresize = [s, rows/2]
-        figuredpi = 50
-    if rows > 120:
-        print(f'WARNING: trying to display {rows} rows. Unlikely to be legible!')
-        fontsize = 8
-        figuresize = [s, rows/1.5]
-        figuredpi = 60
-    elif rows > 65:
-        print(f'WARNING: trying to display {rows} rows!')
-        fontsize = 6
-        figuresize = [s, rows/1.5]
-        figuredpi = 60
-    elif rows > 40:
-        fontsize = 8
-        figuresize = [s, s*ratio] # A4 portrait ratio
-        figuredpi = 70
-    elif rows > 10:
-        fontsize = 10
-        figuresize = [s*ratio, s] # A4 landscape ratio
-        figuredpi = 100
-    else:
-        fontsize = 10
-        figuresize = [s*2, rows] # thin landscape ratio
-        figuredpi = 100
-
-    if figsize is not None:
-        print(f'manually setting figure size to {figsize}')
-        figuresize = figsize
-    if dpi is not None:
-        print(f'manually setting figure dpi to {dpi}')
-        figuredpi = dpi
-    if fontsize is not None:
-        plt.rcParams['font.size'] = fontsize
-
-
-    plt.rcParams['font.size'] = fontsize
-    plt.rcParams['figure.dpi'] = figuredpi
-    plt.rcParams['figure.figsize'] = figuresize
+    plt.rcParams['font.size'] = font_size
+    plt.rcParams['figure.dpi'] = figure_dpi
+    plt.rcParams['figure.figsize'] = [figure_width,figure_height]
 
     fig = plt.figure(
-        figsize=figuresize,
-        dpi=figuredpi,
+        figsize=[figure_width,figure_height],
+        dpi=figure_dpi,
         num=title,
         )
 

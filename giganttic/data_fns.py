@@ -67,8 +67,8 @@ def extract_milestones(df,
     for ms_number, ms in enumerate(milestones):
         ms_id = str(ms_number).zfill(4)
         activities_with_this_ms = df[pd.notna(df[ms])]
-        #for row_number, row in activities_with_this_ms.iterrows():
-        for row in activities_with_this_ms:
+        for row_number, row in activities_with_this_ms.iterrows():
+        #for row in activities_with_this_ms:
             newrow = pd.DataFrame({
                 'row_type' : 'Milestone',
                 #'name' : row['name'] + ' ({})'.format(ms),
