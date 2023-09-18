@@ -1,4 +1,5 @@
-# giganttic/__init__.py
+""" __init__ file for giganttic
+"""
 
 from .giganttic import *
 from .import_fns import *

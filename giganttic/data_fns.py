@@ -12,6 +12,8 @@ import pandas as pd
 from datetime import datetime as dt
 
 def get_datestring():
+    """ uses dt.now() to return a yyymmdd string
+    """
     timenow = dt.now()
     return timenow.strftime("%Y%m%d")
 
@@ -76,8 +78,6 @@ def extract_milestones(df,milestones = ['T0','T1','T2','T3','T4','T5','R0','R1',
                 },
                 index=['ordering']
                 )
-
-            
             df = pd.concat([df,newrow])
     df = df.sort_values('ordering').reset_index(drop=True)
     return df

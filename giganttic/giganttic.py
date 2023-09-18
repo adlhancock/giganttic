@@ -19,10 +19,10 @@ from .plotting_fns import gantt_chart
 
 #%% all in one function
 
-def giganttic(inputfile: str | list = 'Auto',
-              outputfile: str = 'Auto',
-              title: str = 'Auto',
-              filter: str | None = None,
+def giganttic(inputfile: str | list='Auto',
+              outputfile: str='Auto',
+              title: str='Auto',
+              filter: str | None=None,
               **kwargs):
     
     """
