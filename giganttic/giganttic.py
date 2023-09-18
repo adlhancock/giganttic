@@ -2,7 +2,7 @@
 """
 giganttic.py
 
-a matplotlib gantt chart tool using patches, 
+a matplotlib gantt chart tool using patches,
 specifically designed for large projects
 """
 
@@ -24,50 +24,50 @@ def giganttic(inputfile='Auto',
               title='Auto',
               filter_string=None,
               **kwargs):
-    
+
     """
     all in one 'giganttic' function which takes an input and output path
     to import a range of filetypes and generate a giganntic gantt chart.
-    
+
     Parameters
     ----------
     inputfile: str
         file location or list. Filetypes are .csv, .xlsx, or ms project .xml
     outputfile: str, optional
-        where to save the output image. Default is current directory 
+        where to save the output image. Default is current directory
         and the input filename with .png extension
     title: str, optional
         Graph Title.
         Default is input filename
     filter: list or None, optional
-        list containing column name string and regex string to use as a filter. 
+        list containing column name string and regex string to use as a filter.
         Default is None
     **kwargs:
         keyword arguments to be passed to giganttic.gantt_chart
-    
+
     Returns
     -------
-    df: pandas.DataFrame
-    
-    ax: matplotlib.axes._axes.Axes
-        
-    fig: matplotlib.figure.Figure
-    
-    
+    dataframe: pandas.DataFrame
+
+    axis: matplotlib.axises._axises.axises
+
+    figure: matplotlib.figureure.figureure
+
+
     """
-    
+
     # import the data
     if inputfile == 'Auto':
         inputfile = gim.choosefile()
-        
+
     if isinstance(inputfile, list):
-        df = gim.import_list(inputfile)
+        dataframe = gim.import_list(inputfile)
     elif inputfile.endswith('.csv'):
-        df = gim.import_csv(inputfile,**kwargs)
+        dataframe = gim.import_csv(inputfile,**kwargs)
     elif inputfile.endswith('.xlsx'):
-        df = gim.import_excel(inputfile,**kwargs)
+        dataframe = gim.import_excel(inputfile,**kwargs)
     elif inputfile.endswith('.xml'):
-        df = gim.import_mpp_xml(inputfile,**kwargs)
+        dataframe = gim.import_mpp_xml(inputfile,**kwargs)
     else:
         raise ValueError("input must be list or string with path to .csv, .xlsx, or mpp .xml file")
 
@@ -76,24 +76,23 @@ def giganttic(inputfile='Auto',
         defaultstring = os.path.basename(inputfile).rsplit('.')[-2]
     if isinstance(inputfile, list):
         defaultstring = 'gantt-chart'
-    
 
     if title == 'Auto'    :
         title = defaultstring
 
     #filter and manipulate the data
     if filter_string is not None:
-        df = filter_data(df,filter_string[0],filter_string[1])
-        
+        dataframe = filter_data(dataframe,filter_string[0],filter_string[1])
+
     # plot the gantt chart
-    ax, fig = gantt_chart(df,title=title,**kwargs)
-    #fig.show()
-    
-    # save the figure
+    axis, figure = gantt_chart(dataframe,title=title,**kwargs)
+    #figure.show()
+
+    # save the figureure
     if outputfile is not None:
         if outputfile == 'Auto':
             outputfile = f'{defaultstring}.png'
-        plt.savefig(outputfile)
+        plt.savefigure(outputfile)
 
-    return df, ax, fig
+    return dataframe, axis, figure
 

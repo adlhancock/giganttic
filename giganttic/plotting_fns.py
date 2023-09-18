@@ -73,7 +73,7 @@ def setup_figure(df,
     else:
         rows = len(df)
 
-    if isinstance(figsize, float) or isinstance(figsize, int):
+    if isinstance(figsize, (float,int)):
         s = figsize
     else:
         s = 10 # size of figure short side, in inches
@@ -82,7 +82,7 @@ def setup_figure(df,
         ratio = 1.78
     elif figratio == 'print':
         ratio = 1.5 # A4 ratio is sqrt 2, but using adjustment ratio to fix odd distortion
-    elif isinstance(figratio, float) or isinstance(figratio, int):
+    elif isinstance(figratio, (float, int)):
         ratio = figratio
     else:
         raise AssertionError('figratio must be "screen", "print", or float')
@@ -155,24 +155,17 @@ def setup_figure(df,
     ax.tick_params('y', length=0)
 
     # set x and y limits
-    if dates == None:
+    if dates is None:
         dates = [dt.now(), dt(2050, 1, 1)]
     xlimits = (mdates.date2num(d) for d in dates)
     plt.xlim(xlimits)
 
-    if yvalues == None:
+    if yvalues is None:
         ylimits = (rows, -1)
     else:
         ylimits = (max(yvalues[0])+1, min(yvalues[0])-1)
     plt.ylim(ylimits)
 
-    """
-    # add a "now" line
-    if nowline is True:
-        xs = [mdates.date2num(dt.now())]*2
-        ys = [rows+1, -1]
-        ax.plot(xs, ys, 'r--')
-    """
     plt.grid(linestyle="--", color="#eeeeee", zorder=0)
 
     return ax, fig
@@ -226,7 +219,7 @@ def get_colors(df,
 
     if cmap_border is not None:
         if isinstance(cmap_border, list):
-           cmap_border = colors.ListedColormap(cmap_border, 'cmap_border')
+            cmap_border = colors.ListedColormap(cmap_border, 'cmap_border')
     else:
         cmap_border = cmap
 
@@ -285,7 +278,6 @@ def add_milestone_labels(df):
 
     """
     zorder = len(df)+10
-
     for row, event in df.iterrows():
         if event.end != event.start:
             xval = event.start + (event.end-event.start)/2
@@ -298,7 +290,7 @@ def add_milestone_labels(df):
                 va='center',
                 ha='center')
 
-    return
+    return df
 
 
 #%% plot event
@@ -641,8 +633,8 @@ def gantt_chart(df,
 
 
     """
-
-    assert all([x in df.columns for x in ['name', 'start', 'end']]), 'dataframe must have "name", "start", and "end" columns as a minimum'
+assertion_error = 'dataframe must have "name", "start", and "end" columns as a minimum'
+    assert all([x in df.columns for x in ['name', 'start', 'end']]), assertion_error
 
     # set the date range
     if dates is None:
