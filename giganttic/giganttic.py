@@ -92,6 +92,6 @@ def giganttic(inputfile='Auto',
     if outputfile is not None:
         if outputfile == 'Auto':
             outputfile = f'{defaultstring}.png'
-        plt.savefigure(outputfile)
+        plt.savefig(outputfile)
 
     return dataframe, axis, figure

@@ -7,11 +7,10 @@ Created on Fri May  5 08:27:58 2023
 @author: dhancock
 """
 import csv
-import pandas as pd
-#import numpy as np
-import xmltodict
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
+import pandas as pd
+import xmltodict
 
 def import_csv(
     file,
@@ -24,8 +23,8 @@ def import_csv(
     columns: if headers is false, use this list as dataframe columns
     '''
 
-    with open(file,'r') as f:
-        csvdata = csv.reader(f)
+    with open(file,'r',encoding="utf8") as file_object:
+        csvdata = csv.reader(file_object)
         #nestedlist = [row for row in csvdata]
         nestedlist = list(csvdata)
 
@@ -131,8 +130,8 @@ def import_mpp_xml(filename,
 
     """
 
-    with open(filename,'r') as f:
-        xml = xmltodict.parse(f.read())
+    with open(filename,'r',encoding="utf8") as file_object:
+        xml = xmltodict.parse(file_object.read())
 
     df_all = pd.DataFrame(xml['Project']['Tasks']['Task'])
 

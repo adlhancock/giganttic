@@ -7,14 +7,14 @@ Created on Fri May  5 08:32:23 2023
 @author: dhancock
 """
 import os
+from itertools import cycle
+from datetime import datetime as dt
+
+import pandas as pd
 from matplotlib import colors, colormaps
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle, Patch
-from itertools import cycle
-
-from datetime import datetime as dt
-import pandas as pd
 
 
 #%% Setup figure
