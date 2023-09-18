@@ -20,4 +20,4 @@ jobs:
         pip install pylint matplotlib pandas xmltodict
     - name: Analysing the code with pylint
       run: |
-        pylint $(git ls-files '*.py') --generate-rcfile > ./pylintrc
+        pylint $(git ls-files '*.py') --generate-rcfile
