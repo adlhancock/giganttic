@@ -10,7 +10,7 @@ import plotly.graph_objects as go
 import giganttic as gt
 
 def plotly_gantt(df,**kwargs):
-    rows_to_show = kwargs.get('rows_to_show',20)
+    rows_to_show = kwargs.get('rows_to_show',40)
     if rows_to_show == 'all': rows_to_show = max(df.yvalue)
     fig = go.Figure()
     fig.update_layout(dict(
