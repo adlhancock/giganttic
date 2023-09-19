@@ -10,12 +10,11 @@ import os
 from itertools import cycle
 from datetime import datetime as dt
 
-import pandas as pd
+#import pandas as pd
 from matplotlib import colors, colormaps
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle, Patch
-
 
 #%% Setup figure
 def setup_figure(df,
@@ -61,6 +60,62 @@ def setup_figure(df,
 
     """
 
+    dimensions = get_figure_dimensions(df)
+    # print(f'DEBUG: {dimensions}')
+    plt.rcParams['font.size'] = dimensions['font_size']
+    plt.rcParams['figure.dpi'] = dimensions['dpi']
+    plt.rcParams['figure.figsize'] = [dimensions['width'],dimensions['height']]
+
+    fig = plt.figure(
+        figsize=[dimensions['width'],dimensions['height']],
+        dpi=dimensions['dpi'],
+        num=title,
+        )
+
+    ax = fig.add_subplot(111)
+    ax.set_title(title)
+
+    # assign date locator / formatter to the x-axis to get proper labels
+    locator = mdates.AutoDateLocator(minticks=3)
+    formatter = mdates.AutoDateFormatter(locator)
+    ax.xaxis.set_major_locator(locator)
+    ax.xaxis.set_major_formatter(formatter)
+
+    # set yaxis labels
+    ax.set_yticks(yvalues[0], yvalues[1])
+    ax.tick_params('y', length=0)
+
+    # set x and y limits
+    if dates is None:
+        dates = [dt.now(), dt(2050, 1, 1)]
+    xlimits = (mdates.date2num(d) for d in dates)
+    plt.xlim(xlimits)
+
+    if yvalues is None:
+        ylimits = (dimensions['rows'], -1)
+    else:
+        ylimits = (max(yvalues[0])+1, min(yvalues[0])-1)
+    plt.ylim(ylimits)
+
+    plt.grid(linestyle="--", color="#eeeeee", zorder=0)
+
+    return ax, fig
+
+def get_figure_dimensions(df,
+                          **kwargs):
+    """ works out figure size, dpi, and font size from number of rows
+    
+    Parameters
+    ----------
+    df
+
+    Returns
+    -------
+    dimensions
+
+    """
+    yvalues = kwargs.get('yvalues',None)
+    
     # work out how many rows are in the figure
     if 'yvalue' in df.columns:
         rows = len(df.yvalue.unique())
@@ -69,6 +124,7 @@ def setup_figure(df,
         rows = len(set(yvalues[0]))
     else:
         rows = len(df)
+
     # set figure ratio
     figure_ratio = kwargs.get('figure_ratio','print')
     if figure_ratio == 'screen':
@@ -90,7 +146,7 @@ def setup_figure(df,
             'figure_dpi':100},
         'small':{
             'max_rows':40,
-            'font_size':10,
+            'font_size':8,
             'figure_width':short_side*ratio, 
             'figure_height':short_side, # landscape ratio
             'figure_dpi':100},
@@ -137,7 +193,7 @@ def setup_figure(df,
         max_row_values = [figure_sizes[size_name]['max_rows']
                           for size_name in size_names]
         size_dictionary = dict(zip(max_row_values,size_names))
-        for max_size in size_dictionary:
+        for max_size in sorted(max_row_values,reverse=True):
             if rows < max_size:
                 figure_size = size_dictionary[max_size]
 
@@ -146,51 +202,15 @@ def setup_figure(df,
                                          figure_sizes['default'])
 
     #print(f'DEBUG:{rows:<5} {figure_size:<10} {figure_dimensions}')
+    
+    dimensions = {'size':figure_size,
+                  'rows':rows,
+                  'height':figure_dimensions.get('figure_height'),
+                  'width':figure_dimensions.get('figure_width'),
+                  'font_size':kwargs.get('font_size',figure_dimensions.get('font_size')),
+                  'dpi':kwargs.get('figure_dpi',figure_dimensions.get('figure_dpi'))}
 
-    figure_width = figure_dimensions.get('figure_width')
-    figure_height = figure_dimensions.get('figure_height')
-    font_size = kwargs.get('font_size',figure_dimensions.get('font_size'))
-    figure_dpi = kwargs.get('figure_dpi',figure_dimensions.get('figure_dpi'))
-
-
-    plt.rcParams['font.size'] = font_size
-    plt.rcParams['figure.dpi'] = figure_dpi
-    plt.rcParams['figure.figsize'] = [figure_width,figure_height]
-
-    fig = plt.figure(
-        figsize=[figure_width,figure_height],
-        dpi=figure_dpi,
-        num=title,
-        )
-
-    ax = fig.add_subplot(111)
-    ax.set_title(title)
-
-    # assign date locator / formatter to the x-axis to get proper labels
-    locator = mdates.AutoDateLocator(minticks=3)
-    formatter = mdates.AutoDateFormatter(locator)
-    ax.xaxis.set_major_locator(locator)
-    ax.xaxis.set_major_formatter(formatter)
-
-    # set yaxis labels
-    ax.set_yticks(yvalues[0], yvalues[1])
-    ax.tick_params('y', length=0)
-
-    # set x and y limits
-    if dates is None:
-        dates = [dt.now(), dt(2050, 1, 1)]
-    xlimits = (mdates.date2num(d) for d in dates)
-    plt.xlim(xlimits)
-
-    if yvalues is None:
-        ylimits = (rows, -1)
-    else:
-        ylimits = (max(yvalues[0])+1, min(yvalues[0])-1)
-    plt.ylim(ylimits)
-
-    plt.grid(linestyle="--", color="#eeeeee", zorder=0)
-
-    return ax, fig
+    return dimensions
 
 #%% get colors
 def get_colors(df,
@@ -201,7 +221,7 @@ def get_colors(df,
                default_fill="#002F56",
                default_border=None,
                recolour=True,
-               #**kwargs
+               **kwargs
                ):
     """
     gets colours for the dataframe
@@ -306,7 +326,7 @@ def add_milestone_labels(df):
             yval = row
             plt.text(
                 xval, yval,
-                f'{label_text}',
+                f'{label_text:>5}',
                 zorder=zorder,
                 c='white',
                 va='center',
@@ -359,11 +379,12 @@ def plot_event(yvalue,
     anchor = (x, y-height/2)
 
     # plot as a zero length milestone
+    milestone_size = plt.rcParams['font.size']*0.5
     if width == 0:
         ax.plot(x, y,
                 marker="D",
                 color=fill_colour,
-                markersize=plt.rcParams['font.size']*0.5
+                markersize=milestone_size
                 )
 
         # create a "dummy" rectangle, to avoid errors
@@ -373,10 +394,8 @@ def plot_event(yvalue,
             height=0)
 
         # add a text label if possible
-        if pd.notna(event.milestone):
-            label_text = str(event.milestone)
-            mslabel = f'{label_text:>4}'
-            plt.text(x, y, mslabel)
+        label_text = str(event.get('milestone',None))
+        if label_text not in (None,'None'): plt.text(x, y, f'{label_text:>6}')
 
     # plot as a bar
     else:
@@ -417,6 +436,7 @@ def plot_connections(df,
     ax : matplotlib.axes._axes.Axes
 
     """
+    assert 'predecessors' in df.columns, 'no predecessors defined in df'
 
     # some default variables
     arrow_style = kwargs.get('arrow_style','->')
@@ -431,33 +451,37 @@ def plot_connections(df,
         lambda x: x ==['']), 'predecessors'] = float('nan')
 
     for row, event in df.loc[df.predecessors.notna()].iterrows():
-        x_end = mdates.date2num(event.start)
-        y_end = event.yvalue
+        x_end = float(mdates.date2num(event.start))
+        y_end = float(event.yvalue)
 
         for predecessor in event.predecessors:
 
             predecessor_row = df[df.id == predecessor]
-            x_start = mdates.date2num(predecessor_row.end)
-            y_start = predecessor_row.yvalue
-            #print(x_start, y_start)
-            if x_end < x_start:
-                line_colour = line_colour_error
-                line_style = line_style_error
-            if x_end == x_start:
-                connection_style = "arc3, rad=0"
-            else:
-                connection_style = f"angle,angleA=-90,angleB=180,rad={line_radius}"
-            ax.annotate("",
-                        xy=[x_end, y_end], xycoords='data',
-                        xytext=[x_start, y_start], textcoords='data',
-                        arrowprops={'arrowstyle':arrow_style,
-                                    'linestyle':line_style,
-                                    'color':line_colour,
-                                    'shrinkA':8,
-                                    'shrinkB':8,
-                                    'connectionstyle':connection_style},
-                        zorder=100
-                        )
+            x_start = float(mdates.date2num(predecessor_row.end))
+            y_start = float(predecessor_row.yvalue)
+            #print(f'DEBUG:\n\t x = {x_start},{x_end}\n\t y = {y_start},{y_end}')
+            if y_start != y_end:
+                if x_end < x_start:
+                    connection_line_colour = line_colour_error
+                    connection_line_style = line_style_error
+                else:
+                    connection_line_colour = line_colour
+                    connection_line_style = line_style
+                if x_end == x_start:
+                    connection_style = "arc3,rad=0"
+                else:
+                    connection_style = f"angle,angleA=-90,angleB=180,rad={line_radius}"
+                ax.annotate("",
+                            xy=[x_end, y_end], xycoords='data',
+                            xytext=[x_start, y_start], textcoords='data',
+                            arrowprops={'arrowstyle':arrow_style,
+                                        'linestyle':connection_line_style,
+                                        'color':connection_line_colour,
+                                        'shrinkA':8,
+                                        'shrinkB':8,
+                                        'connectionstyle':connection_style},
+                            zorder=100
+                            )
 
     return df, ax
 
@@ -565,7 +589,7 @@ def gantt_chart(df,
                 legend=False,
                 nowline=True,
                 nowline_colour='#7a9aeb',
-                connections=True,
+                connections=False,
                 tight=True,
                 max_label_length=100,
                 **kwargs):
@@ -629,16 +653,12 @@ def gantt_chart(df,
 
     # set up figure
     if yvalues is None:
+        df['yvalue'] = df.get('yvalue',list(range(len(df))))
+        df['ylabel'] = df.get('ylabel',df.name)
         maxlength = max_label_length
-        ylocs = list(range(len(df)))
-        ylabels = df.name.map(
+        df.ylabel = df.ylabel.map(
             lambda x: str(x)[:maxlength-5]+'...' if len(str(x)) > maxlength else str(x))
-        yvalues = [ylocs, ylabels]
-
-    else:
-        ylocs, ylabels = yvalues
-
-    df['yvalue'] = ylocs
+        yvalues = [df.yvalue.tolist(), df.ylabel.tolist()]
 
     ax, fig = setup_figure(df,
                            dates=dates,
@@ -654,18 +674,14 @@ def gantt_chart(df,
 
     # iterate through events
     for row, event in df.iterrows():
-
         # apply custom colors
         if customcolours is not None:
             for item in customcolours:
                 if item in str(event[customcolour_field]):
                     event.fillcolour = customcolours[item]
 
-        # create and plot shapes
-        yvalue = ylocs[row]
-
         # create and add the shape
-        shape = plot_event(yvalue,
+        shape = plot_event(event['yvalue'],
                            event,
                            fill_colour=event.fillcolour,
                            border_colour=event.bordercolour,
@@ -675,16 +691,13 @@ def gantt_chart(df,
     # add a "now" line
     if nowline is True:
         xs = [mdates.date2num(dt.now())]*2
-        ys = [max(ylocs)+1, min(ylocs)-1]
+        ys = [max(df.yvalue)+1, min(df.yvalue)-1]
         ax.plot(xs, ys, color=nowline_colour, linestyle='--')
 
     # add connection arrows
-    if connections is True and 'predecessors' in df.columns:
-        try:
-            plot_connections(df, ax, **kwargs)
-        except:
-            print('could not add connections')
-            #raise
+    if connections is True:
+        plot_connections(df, ax, **kwargs)
+
 
     # add a legend
     if legend is True:

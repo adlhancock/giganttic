@@ -40,10 +40,9 @@ def filter_data(df,column,regex):
     return df
 
 def extract_milestones(df,
-                       milestones=None):
+                       milestone_columns=None):
     """
-    extracts milestone dates if the dataframe is
-    a row of activities with columns for the milestone dates
+    extracts milestones if the dataframe has columns with milestone dates
 
     Parameters
     ---------
@@ -58,13 +57,13 @@ def extract_milestones(df,
     df: pandas.DataFrame
     """
 
-    if milestones is None:
-        milestones = ['T0','T1','T2','T3','T4','T5',
+    if milestone_columns is None:
+        milestone_columns = ['T0','T1','T2','T3','T4','T5',
                       'R0','R1','R2','R3','R4']
     df['activity_id'] = df.index.map(lambda x: str(x).zfill(4))
     df['ordering'] = df.activity_id.str.zfill(4)
     df['row_type'] = 'Activity'
-    for ms_number, ms in enumerate(milestones):
+    for ms_number, ms in enumerate(milestone_columns):
         ms_id = str(ms_number).zfill(4)
         activities_with_this_ms = df[pd.notna(df[ms])]
         for row_number, row in activities_with_this_ms.iterrows():
@@ -87,6 +86,36 @@ def extract_milestones(df,
     df = df.sort_values('ordering').reset_index(drop=True)
     return df
 
+def categorise_rows(df):
+    if 'row_type' not in df.columns:
+        df['row_type'] = 'Activity'
+        df.loc[df.end == df.start,'row_type'] = 'Milestone'
+    return df
+
+def assign_activity_ids(df):
+    if 'activity_id' not in df.columns:
+        assert 'WBS' in df.columns, 'dataframe must have WBS to assign activity ids'
+        df['activity_id'] = df.WBS.map(lambda x: df.WBS.unique().tolist().index(x))
+    try:
+        df.activity_id = df.activity_id.map(float)
+    except:
+        raise AssertionError('activity_id must be numerical')
+    return df
+    
+def autopopulate_milestones(df):
+    """ tries to autopopulate milestones by looking for similarities in names"""
+    if 'row_type' not in df.columns:
+        df = categorise_rows(df)
+    if 'activity_id' not in df.columns:
+        df = assign_activity_ids(df)
+    if 'milestone' not in df.columns:
+        df['milestone'] = float('nan')
+        for i,activity_row in df.loc[df.row_type == 'Activity'].iterrows():
+            activity_name = activity_row['name']
+            df.loc[df.activity_id == activity_row['activity_id'],'milestone'] = df.name.map(
+                lambda x: ''.join(x.split(activity_name)).strip())
+    return df
+
 def flatten_milestones(df):
     """ 
     returns the dataframe with additional columns ylabel and yvalue 
@@ -101,8 +130,16 @@ def flatten_milestones(df):
     -------
         df: pandas.DataFrame
     """
-
+    df = categorise_rows(df)
+    df = assign_activity_ids(df)
+    
     df['ylabel'] = df.name
+    
+    # try to autopopulate milestone labels if they're missing
+    if 'milestone' not in df.columns:
+        print('WARNING: no milestone column in dataframe. Trying to autopopulate')
+        df = autopopulate_milestones(df)
+
     df.loc[df['row_type'] == 'Milestone','ylabel'] = ''
     df['yvalue'] = df.activity_id.map(float) * 1.8
     df.loc[df['row_type'] == 'Milestone','yvalue'] = df.yvalue + 0.7

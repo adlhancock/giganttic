@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 #from giganttic.plotting_fns import gantt_chart
 
 from . import import_fns as gim
-from .data_fns import filter_data
+from .data_fns import filter_data, flatten_milestones
 from .plotting_fns import gantt_chart
 
 #%% all in one function
@@ -63,11 +63,13 @@ def giganttic(inputfile='Auto',
     if isinstance(inputfile, list):
         dataframe = gim.import_list(inputfile)
     elif inputfile.endswith('.csv'):
-        dataframe = gim.import_csv(inputfile,**kwargs)
+        dataframe = gim.import_csv(inputfile,
+                                   headers=kwargs.get('headers',True),
+                                   columns=kwargs.get('columns',None))
     elif inputfile.endswith('.xlsx'):
-        dataframe = gim.import_excel(inputfile,**kwargs)
+        dataframe = gim.import_excel(inputfile,sheet = kwargs.get('sheet',0))
     elif inputfile.endswith('.xml'):
-        dataframe = gim.import_mpp_xml(inputfile,**kwargs)
+        dataframe = gim.import_mpp_xml(inputfile)
     else:
         raise ValueError("input must be list or string with path to .csv, .xlsx, or mpp .xml file")
 
@@ -83,6 +85,10 @@ def giganttic(inputfile='Auto',
     #filter and manipulate the data
     if filter_string is not None:
         dataframe = filter_data(dataframe,filter_string[0],filter_string[1])
+        
+    # flatten milestones if requested
+    if kwargs.get('flatten_milestones',False) is True:
+        dataframe = flatten_milestones(dataframe)
 
     # plot the gantt chart
     axis, figure = gantt_chart(dataframe,title=title,**kwargs)
