@@ -64,11 +64,3 @@ def plotly_gantt(df,**kwargs):
     fig.show(renderer='browser')
     
     return fig
-
-# test
-def test():
-    testfile = '/local/python/giganttic/test/exampledata1.csv'
-    df = gt.import_csv(testfile)
-    df['yvalue'] = list(range(len(df)))
-    df['ylabel'] = df.name
-    plotly_gantt(df)
