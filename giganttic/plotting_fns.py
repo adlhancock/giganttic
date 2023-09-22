@@ -152,7 +152,7 @@ def get_figure_dimensions(df,
             'figure_dpi':100},
         'medium':{
             'max_rows':65,
-            'font_size':8,
+            'font_size':7,
             'figure_width':short_side,
             'figure_height':short_side*ratio, # portrait ratio
             'figure_dpi':100},
@@ -168,18 +168,24 @@ def get_figure_dimensions(df,
             'figure_width':short_side,
             'figure_height':rows/2, # very tall portrait ratio
             'figure_dpi':70},
-        'nearly_illegible':{
+        'giant':{
             'max_rows':500,
             'font_size':3,
             'figure_width':short_side/1.5,
             'figure_height':rows/2.5, # try to squeeze it all in
             'figure_dpi':60},
+        'nearly_illegible':{
+            'max_rows':900,
+            'font_size':2,
+            'figure_width':short_side/1.5,
+            'figure_height':rows/2, # try to squeeze it all in
+            'figure_dpi':60},
         'default':{
             'max_rows':'None',
-            'font_size':8,
-            'figure_width':6,
-            'figure_height':4, # 6:4 modest size
-            'figure_dpi':100}
+            'font_size':2,
+            'figure_width':short_side/2,
+            'figure_height':rows, # 6:4 modest size
+            'figure_dpi':60}
     }
     figure_size = kwargs.get('figure_size',None)
 
@@ -324,13 +330,14 @@ def add_milestone_labels(df):
             label_text = str(event.milestone)
             xval = event.start + (event.end-event.start)/2
             yval = row
-            plt.text(
-                xval, yval,
-                f'{label_text:>5}',
-                zorder=zorder,
-                c='white',
-                va='center',
-                ha='center')
+            if label_text not in (None, 'nan', 'None',''):
+                plt.text(
+                    xval, yval,
+                    f'{label_text:>5}',
+                    zorder=zorder,
+                    c='white',
+                    va='center',
+                    ha='center')
 
     return df
 
@@ -395,7 +402,7 @@ def plot_event(yvalue,
 
         # add a text label if possible
         label_text = str(event.get('milestone',None))
-        if label_text not in (None,'None'): plt.text(x, y, f'{label_text:>6}')
+        if label_text not in (None,'None','nan'): plt.text(x, y, f'{label_text:>6}')
 
     # plot as a bar
     else:
@@ -571,7 +578,7 @@ def create_legend(ax,
 
     if len(patches) != 0:
         plt.rcParams['legend.framealpha'] = 0.5
-        ax.legend(handles=patches, framealpha=0.5)
+        ax.legend(handles=patches, framealpha=0.5,fontsize='small')
     else:
         print("no legend items generated")
     return ax
