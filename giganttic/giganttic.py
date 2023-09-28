@@ -13,9 +13,10 @@ import matplotlib.pyplot as plt
 #from giganttic.data_fns import filter_data
 #from giganttic.plotting_fns import gantt_chart
 
-from . import import_fns as gim
-from .data_fns import filter_data, flatten_milestones
-from .plotting_fns import gantt_chart
+#from . import import_fns as gim
+#from .data_fns import filter_data, flatten_milestones
+#from .plotting_fns import gantt_chart
+import giganttic as gt
 
 #%% all in one function
 
@@ -58,18 +59,18 @@ def giganttic(inputfile='Auto',
 
     # import the data
     if inputfile == 'Auto':
-        inputfile = gim.choosefile()
+        inputfile = gt.choosefile()
 
     if isinstance(inputfile, list):
-        dataframe = gim.import_list(inputfile)
+        dataframe = gt.import_list(inputfile)
     elif inputfile.endswith('.csv'):
-        dataframe = gim.import_csv(inputfile,
+        dataframe = gt.import_csv(inputfile,
                                    headers=kwargs.get('headers',True),
                                    columns=kwargs.get('columns',None))
     elif inputfile.endswith('.xlsx'):
-        dataframe = gim.import_excel(inputfile,sheet = kwargs.get('sheet',0))
+        dataframe = gt.import_excel(inputfile,sheet = kwargs.get('sheet',0))
     elif inputfile.endswith('.xml'):
-        dataframe = gim.import_mpp_xml(inputfile)
+        dataframe = gt.import_mpp_xml(inputfile)
     else:
         raise ValueError("input must be list or string with path to .csv, .xlsx, or mpp .xml file")
 
@@ -84,14 +85,14 @@ def giganttic(inputfile='Auto',
 
     #filter and manipulate the data
     if filter_string is not None:
-        dataframe = filter_data(dataframe,filter_string[0],filter_string[1])
+        dataframe = gt.filter_data(dataframe,filter_string[0],filter_string[1])
         
     # flatten milestones if requested
     if kwargs.get('flatten_milestones',False) is True:
-        dataframe = flatten_milestones(dataframe)
+        dataframe = gt.flatten_milestones(dataframe)
 
     # plot the gantt chart
-    axis, figure = gantt_chart(dataframe,title=title,**kwargs)
+    axis, figure = gt.gantt_chart(dataframe,title=title,**kwargs)
     #figure.show()
 
     # save the figureure

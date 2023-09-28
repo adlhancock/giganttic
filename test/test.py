@@ -26,7 +26,7 @@ def case_1():
     ax, fig = gt.gantt_chart(df,
                              title='Example 1',
                              fillcolumn="id",
-                             cmap=colormaps['tab10'],
+                             cmap_fill=colormaps['tab10'],
                              connections=True,
                              nowline = True)
     fig.savefig('case_1.png')
@@ -75,7 +75,7 @@ def case_4():
     CASE 4: manual file picking with a custom colourmap
     """
     out = gt.giganttic(
-        cmap=['#F6D44D','#006F45','#0082CA','#C9252C','#002F56','#58585B'],
+        cmap_fill=['#F6D44D','#006F45','#0082CA','#C9252C','#002F56','#58585B'],
         fillcolumn='id')
     return out
 
@@ -102,12 +102,12 @@ def case_5():
     df.loc[:,'name'] = df.id.map(str)+' - '+df.name
     ax, fig = gt.gantt_chart(df,
                              fillcolumn='id',
-                             cmap=['#F6D44D',
-                                   '#006F45',
-                                   '#0082CA',
-                                   '#C9252C',
-                                   '#002F56',
-                                   '#58585B'])
+                             cmap_fill=['#F6D44D',
+                                        '#006F45',
+                                        '#0082CA',
+                                        '#C9252C',
+                                        '#002F56',
+                                        '#58585B'])
 
     return df, ax, fig
 
