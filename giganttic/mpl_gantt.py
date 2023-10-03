@@ -93,7 +93,7 @@ def gantt_chart(df,
         # set up figure
         if yvalues is None:
             df['yvalue'] = df.get('yvalue',list(range(len(df))))
-            df['ylabel'] = df.get('ylabel',df.name)
+            df['ylabel'] = df.get('ylabel',df.activity_name)
             maxlength = max_label_length
             df.ylabel = df.ylabel.map(
                 lambda x: str(x)[:maxlength-5]+'...' if len(str(x)) > maxlength else str(x))
@@ -480,8 +480,8 @@ def gantt_chart(df,
         ax.plot(xs, ys, color=nowline_colour, linestyle='--')
 
     #%%
-    assertion_error = 'dataframe must have "name", "start", and "end" columns as a minimum'
-    assert all(x in df.columns for x in ['name', 'start', 'end']), assertion_error
+    assertion_error = 'dataframe must have "activity_name", "start", and "end" columns as a minimum'
+    assert all(x in df.columns for x in ['activity_name', 'start', 'end']), assertion_error
 
     ax, fig = setup_figure(df,**kwargs)
 

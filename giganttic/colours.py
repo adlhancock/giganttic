@@ -10,7 +10,7 @@ from matplotlib import colors, colormaps
 def get_colours(df,
                fillcolumn=None,
                bordercolumn=None,
-               customcolour_column='name',
+               customcolour_column='activity_name',
                cmap_fill=colormaps['viridis'],
                cmap_border=colormaps['tab10'],
                customcolours=None,

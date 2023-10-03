@@ -72,7 +72,7 @@ def extract_milestones(df,
             '''
             newrow = row.copy()
             newrow.row_type = 'Milestone'
-            newrow['name'] = f'({ms})'
+            newrow['activity_name'] = f'({ms})'
             newrow.activity_id = row['activity_id']
             newrow.ordering = row['activity_id'] + f'.{ms_id}'
             newrow.start = row[ms]
@@ -86,7 +86,7 @@ def extract_milestones(df,
 
             newrow = pd.DataFrame({
                 'row_type' : 'Milestone',
-                'name' : '({}) {}'.format(ms,row["name"]),
+                'activity_name' : '({}) {}'.format(ms,row["activity_name"]),
                 #'ylabel' : f'({ms})',
                 'activity_id': row['activity_id'],
                 #'milestone_id': ms_id,
@@ -134,8 +134,8 @@ def autopopulate_milestones(df):
     if 'milestone' not in df.columns:
         df['milestone'] = float('nan')
         for i,activity_row in df.loc[df.row_type == 'Activity'].iterrows():
-            activity_name = activity_row['name']
-            df.loc[df.activity_id == activity_row['activity_id'],'milestone'] = df.name.map(
+            activity_name = activity_row['activity_name']
+            df.loc[df.activity_id == activity_row['activity_id'],'milestone'] = df.activity_name.map(
                 lambda x: ''.join(x.split(activity_name)).strip())
     return df
 
@@ -156,7 +156,7 @@ def flatten_milestones(df):
     df = categorise_rows(df)
     df = assign_activity_ids(df)
 
-    df['ylabel'] = df.name
+    df['ylabel'] = df.activity_name
 
     # try to autopopulate milestone labels if they're missing
     if 'milestone' not in df.columns:

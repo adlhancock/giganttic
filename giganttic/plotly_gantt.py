@@ -15,8 +15,11 @@ def plotly_gantt(df,
                  **kwargs):
     """ produces a gantt chart using plotly"""
 
-    def set_up_figure(df,rows_to_show, **kwargs):
+    def set_up_figure(df, **kwargs):
         rows_to_show = kwargs.get('rows_to_show','all')
+        if rows_to_show == 'all': 
+            rows_to_show = df.get('yvalue',df.get('activity_name')).size
+        
         show_rangeslider = kwargs.get('show_rangeslider',False)
         if show_rangeslider is False:
             rangeslider_thickness = 0
@@ -24,12 +27,12 @@ def plotly_gantt(df,
             rangeslider_thickness = kwargs.get('rangeslider_thickness',0.05)
 
         if 'yvalue' not in df.columns and kwargs.get('yvalues') == None:
-            print('data has no yvalues, autogenerating')
-            df['yvalue'] = list(range(len(df)))
+            #print('data has no yvalues, autogenerating')
+            df['yvalue'] = df.index.tolist()
         if 'ylabel' not in df.columns and kwargs.get('ylabels') == None:
-            df['ylabel'] = df['name'].copy()
+            df['ylabel'] = df['activity_name'].copy()
 
-        if rows_to_show == 'all': rows_to_show = max(df.yvalue)
+
         fig = go.Figure()
         fig.update_layout(
             title=title,
@@ -67,7 +70,7 @@ def plotly_gantt(df,
             bottom = yvalue-bar_size/2
             fillcolour = row.get('fillcolour',default_fill)
             bordercolour = row.get('bordercolour',default_border)
-            #hovertext = row.get('hovertext',row.get('name',''))
+            #hovertext = row.get('hovertext',row.get('activity_name',''))
             if bordercolour is None:
                 borderwidth = 0
             else:
@@ -84,7 +87,7 @@ def plotly_gantt(df,
                     fill='toself',
                     mode='lines',
                     fillcolor=fillcolour,
-                    name=row.get('name',i),
+                    name=row.get('activity_name',i),
                     # hovertext='TEST TEXT'
                     #hoverlabel='TEST'
                     )
@@ -99,18 +102,17 @@ def plotly_gantt(df,
                                     symbol='diamond',
                                     color=fillcolour),
                                 mode='markers+text',
-                                name=row.get('name',i))
+                                name=row.get('activity_name',i))
 
     def make_yaxis_range_menu(df,
-                              rows_to_show,
                               yaxis_ranges = [5,10,50,100,1000],
                               **kwargs):
-
-        if rows_to_show == 'all': rows_to_show = max(df.yvalue)
-        ranges = {'default':[rows_to_show+1,-1],
-                  'all':[len(df)+1,-1]}
-        fontsizes = {'default':8,
-                     'all':get_fontsize(len(df))}
+        rows_to_show = kwargs.get('rows_to_show','all')
+        if rows_to_show == 'all': rows_to_show = df.yvalue.max()
+        ranges = {f'default ({rows_to_show})':[rows_to_show+1,-1],
+                  'all':[df.yvalue.max()+1,-1]}
+        fontsizes = {f'default ({rows_to_show})':get_fontsize(rows_to_show),
+                     'all':get_fontsize(df.yvalue.max())}
         for n in yaxis_ranges:
             ranges[f'{n} rows']=[n+1,-1]
             fontsizes[f'{n} rows'] = get_fontsize(n)
@@ -195,19 +197,15 @@ def plotly_gantt(df,
                                 )
         return filter_menu
 
-    if 'rows_to_show' in kwargs:
-        #rows_to_show = kwargs.get('rows_to_show','all')
-        rows_to_show = kwargs.pop('rows_to_show')
-
-    fig = set_up_figure(df, rows_to_show, **kwargs)
+    fig = set_up_figure(df, **kwargs)
     df,cmaps = get_colours(df,**kwargs)
     plot_shapes(df, fig, **kwargs)
-    fig.update_traces(textfont_size = get_fontsize(rows_to_show))
+    #fig.update_traces(textfont_size = get_fontsize(rows_to_show))
     menus = []
     if kwargs.get('filters_menu',False) is True:
         menus.append(make_filter_menu(df,**kwargs))
     if kwargs.get('yaxis_range_menu',False) is True:
-        menus.append(make_yaxis_range_menu(df,rows_to_show,**kwargs))
+        menus.append(make_yaxis_range_menu(df,**kwargs))
     if len(menus) > 0:
         fig.update_layout(updatemenus=menus)
 

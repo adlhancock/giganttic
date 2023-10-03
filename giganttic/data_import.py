@@ -38,7 +38,7 @@ def import_csv(
     else:
         dataframe = pd.DataFrame(events)
         if columns is None:
-            columns = ["id","name","start","end"]
+            columns = ["id","activity_name","start","end"]
             try:
                 dataframe.columns = columns
             except:
@@ -156,11 +156,11 @@ def import_mpp_xml(filename,
     dataframe.Finish = pd.to_datetime(dataframe.Finish)
 
     dataframe = dataframe.rename(columns={'UID':'id',
-                                          'Name':'name',
+                                          'Name':'activity_name',
                                           'Start':'start',
                                           'Finish':'end'})
 
-    dataframe.name = dataframe.WBS+' '+dataframe.name
+    dataframe.activity_name = dataframe.WBS+' '+dataframe.activity_name
     return dataframe
 
 def choosefile(path='./'):

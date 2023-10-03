@@ -1,4 +1,4 @@
-id,WBS,name,start,end,predecessors,milestone
+id,WBS,activity_name,start,end,predecessors,milestone
 1,1,One Work Breakdown Area Testing,01/05/2024,12/12/2028,,
 2,1.1,A test programme,01/05/2024,01/04/2028,,
 3,1.1,A test programme (T0),01/05/2024,01/05/2024,,T0
