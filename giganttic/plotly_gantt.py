@@ -5,14 +5,10 @@ Created on Tue Sep 19 13:51:40 2023
 
 @author: dhancock
 """
-#from matplotlib import colors
-#from matplotlib import colormaps as cm
-
 
 import plotly.graph_objects as go
 from .colours import get_colours
 from .plotting_extras import get_fontsize
-#import giganttic as gt
 
 def plotly_gantt(df,
                  title='plotly giganttic',
@@ -62,7 +58,7 @@ def plotly_gantt(df,
         ms_size = kwargs.get('ms size', 8)
         default_fill = kwargs.get('default_fill',"LightSkyBlue")
         default_border = kwargs.get('default_border',None)
-
+        
         for i, row in df.iterrows():
             start = row.start
             finish = row.end

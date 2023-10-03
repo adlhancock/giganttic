@@ -42,14 +42,10 @@ def get_colours(df,
 
     Returns
     -------
-    fillcolour
-
-    bordercolour
-
     df
 
     cmaps: dict
-        keys are 'fill' and 'border'
+        keys are 'fillcolour', 'bordercolour', 'custommcolour'
 
     """
 
@@ -72,13 +68,11 @@ def get_colours(df,
     if fillcolumn is not None:
         fillvalues = df[fillcolumn].unique().tolist()
         if len(fillvalues) < len(cmap_fill.colors)*0.5 or len(cmap_fill.colors) > 30:
-            #fillcolor = cmap(fillvalues.index(fillvalue)/len(fillvalues))
             df.fillcolour = df[fillcolumn].map(
                 lambda x: cmap_fill(fillvalues.index(x)/len(fillvalues)))
         else:
             iterator = cycle(cmap_fill.colors)
             fillcolours = [next(iterator) for x in range(len(fillvalues))]
-            #fillcolor = fillcolours[fillvalues.index(fillvalue)]
             df.fillcolour = df[fillcolumn].map(
                 lambda x: fillcolours[fillvalues.index(x)])
     else:
@@ -90,29 +84,17 @@ def get_colours(df,
         df.bordercolour = df[bordercolumn].map(
             lambda x: cmap_border(bordervalues.index(x)/len(bordervalues)))
     else:
-        df.bordercolor = default_border
+        df.bordercolour = default_border
 
     # populate any custom colours
     if customcolours is not None:
-        #print('DEBUG: applying custom colours')
-        """
-        for row, event in df.iterrows():
-            for item in customcolours:
-                if item in str(event[customcolour_column]): # uses a very simple string search
-                    #print('DEBUG: applying {} to {}'.format(customcolours[item],event['name']))
-                    event.fillcolour = customcolours[item]
-                    event.customcolour = customcolours[item]
-                    #print('DEBUG: fill colour = {}'.format(event.fillcolour))
-                    #print('DEBUG: custom colour = {}'.format(event.customcolour))
-        """
         for term in customcolours:
             df.loc[df[customcolour_column].map(lambda x: term in str(x)),
                    ['fillcolour','customcolour']] = customcolours[term]
 
-
     cmaps = {'fill':cmap_fill,'border':cmap_border,'custom':customcolours}
-    # convert all notna colors to hex
 
+    # convert all notna colours to hex
     for colourcolumn in ('fillcolour', 'bordercolour','customcolour'):
         df.loc[df[colourcolumn].notna(),colourcolumn] = df.loc[
             df[colourcolumn].notna(),colourcolumn].map(colors.to_hex)
