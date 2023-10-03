@@ -17,7 +17,7 @@ def get_figure_sizes(rows, ratio = 1.414, short_side=10):
         'small':{
             'max_rows':40,
             'font_size':8,
-            'figure_width':short_side*ratio, 
+            'figure_width':short_side*ratio,
             'figure_height':short_side, # landscape ratio
             'figure_dpi':100},
         'medium':{

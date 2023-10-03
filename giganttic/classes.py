@@ -21,7 +21,7 @@ class Giganttic():
         self.data_source = kwargs.get('data_source',None)
         if self.data_source is not None:
             self.rawdata = self.import_data(self.data_source)
-        
+
     def import_data(self,data_source):
         assert isinstance(data_source, (str,list)), f'{data_source}'
         if isinstance(data_source,str):
@@ -35,13 +35,13 @@ class Giganttic():
         else:
             data = import_list(data_source)
         return data
-    
+
     def cleanup_data(self,**kwargs):
         pass
-    
+
     def setup_figure(self,**kwargs):
         pass
-    
+
     def save_images(self,**kwargs):
         pass
 
@@ -61,7 +61,7 @@ class Giganttic():
             self.options = kwargs.get('colours',None)
             pass
 
-  
-    
-    
-        
+
+
+
+

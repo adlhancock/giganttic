@@ -37,7 +37,7 @@ def gantt_chart(df,
 
     fig : matplotlib.figure.Figure
     """
-    
+
     #%%
     def setup_figure(df,
                      dates=None,
@@ -143,18 +143,18 @@ def gantt_chart(df,
             plt.tight_layout()
 
         return ax, fig
-    
+
     #%%
     def get_figure_dimensions(df,**kwargs):
         """ works out figure size, dpi, and font size from number of rows
         Parameters
         ----------
         df
-    
+
         Returns
         -------
         dimensions
-    
+
         """
         yvalues = kwargs.get('yvalues',None)
         # work out how many rows are in the figure
@@ -165,7 +165,7 @@ def gantt_chart(df,
             rows = len(set(yvalues[0]))
         else:
             rows = len(df)
-    
+
         # set figure ratio
         figure_ratio = kwargs.get('figure_ratio','print')
         if figure_ratio == 'screen':
@@ -176,10 +176,10 @@ def gantt_chart(df,
             ratio = figure_ratio
         else:
             raise AssertionError('figure ratio must be "screen", "print", or float')
-    
+
         figure_sizes = get_figure_sizes(rows, ratio, short_side=10)
         figure_size = kwargs.get('figure_size',None)
-    
+
         if isinstance(figure_size,list):
             figure_width, figure_height = figure_size
             figure_size = 'manual'
@@ -193,11 +193,11 @@ def gantt_chart(df,
             for max_size in sorted(max_row_values,reverse=True):
                 if rows < max_size:
                     figure_size = size_dictionary[max_size]
-    
+
         # apply the figure dimensions
         figure_dimensions = figure_sizes.get(figure_size,
                                              figure_sizes['default'])
-    
+
         #print(f'DEBUG:{rows:<5} {figure_size:<10} {figure_dimensions}')
         dimensions = {'size':figure_size,
                       'rows':rows,
@@ -205,7 +205,7 @@ def gantt_chart(df,
                       'width':figure_dimensions.get('figure_width'),
                       'font_size':kwargs.get('font_size',figure_dimensions.get('font_size')),
                       'dpi':kwargs.get('figure_dpi',figure_dimensions.get('figure_dpi'))}
-    
+
         return dimensions
 
     #%%
@@ -239,7 +239,7 @@ def gantt_chart(df,
                         ha='center')
 
         return df
-    
+
     #%%
     def plot_event(event,
                    ax,
@@ -286,7 +286,7 @@ def gantt_chart(df,
 
             # add a text label if possible
             label_text = str(event.get('milestone',None))
-            if label_text not in (None,'None','nan'): 
+            if label_text not in (None,'None','nan'):
                 #plt.text(x, y, f'{label_text:>6}'
                 plt.text(x, y+height/2, f'{label_text:^}'
                 )
@@ -303,7 +303,7 @@ def gantt_chart(df,
                 shape.set_edgecolor(border_colour)
             shape.set_zorder(10)
             ax.add_patch(shape)
-    
+
     #%%
     def plot_connections(df,
                          ax,
@@ -378,7 +378,7 @@ def gantt_chart(df,
                                 )
 
         return df, ax
-    
+
     #%%
     def add_legend(ax,
                    fig,
@@ -469,7 +469,7 @@ def gantt_chart(df,
             ax.legend(handles=patches, framealpha=0.5,fontsize='small')
         else:
             print("no legend items generated")
-    
+
     #%%
     def add_nowline(df,
                     ax,
@@ -478,7 +478,7 @@ def gantt_chart(df,
         xs = [mdates.date2num(dt.now())]*2
         ys = [max(df.yvalue)+1, min(df.yvalue)-1]
         ax.plot(xs, ys, color=nowline_colour, linestyle='--')
-    
+
     #%%
     assertion_error = 'dataframe must have "name", "start", and "end" columns as a minimum'
     assert all(x in df.columns for x in ['name', 'start', 'end']), assertion_error
@@ -495,7 +495,7 @@ def gantt_chart(df,
     for row, event in df.iterrows():
         # create and add the shape
         plot_event(event, ax)
-    
+
     # add a "now" line
     if nowline is True:
         add_nowline(df,ax)
@@ -510,7 +510,7 @@ def gantt_chart(df,
         add_legend(ax, fig, df,
                    cmaps,
                    **kwargs)
-        
+
     # add extra labels from the milestone column
     if extra_labels is True:
         add_extra_labels(df,**kwargs)

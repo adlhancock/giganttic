@@ -22,13 +22,13 @@ def plot_by_column(df,column,plot_function=gantt_chart,**kwargs):
     df_filtered = df.copy()
 
     #print(f"plotting separate {column}s\n".upper())
-        
+
     groups = df_filtered[column].unique().tolist()
     df_groups = {}
     figure_details = {}
     for group in groups:
         df_group = filter_data(df_filtered,column,group).copy()
-                
+
         if len(df_group) > 0:
             subtitle = group
             graphtitle = '{} - {}'.format(subtitle, title)
@@ -43,13 +43,13 @@ def plot_by_column(df,column,plot_function=gantt_chart,**kwargs):
                 title = graphtitle,
                 data = df_group)
             plt.close()
-            
-            
+
+
     return figure_details
 
 def get_fontsize(row_count,fontsizes = list(zip((5,10,20,50,100,500,1000),(12,10,9,8,6,4,3)))):
     """ returns a font size based on a number of rows"""
-    
+
     fontsize = 12
     for rows, size in fontsizes:
         #print(f'DEBUG: row_count = {row_count}, rows = {rows}, size = {size}')

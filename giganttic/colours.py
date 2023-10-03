@@ -97,9 +97,9 @@ def get_colours(df,
         #print('DEBUG: applying custom colours')
         """
         for row, event in df.iterrows():
-            for item in customcolours:  
+            for item in customcolours:
                 if item in str(event[customcolour_column]): # uses a very simple string search
-                    #print('DEBUG: applying {} to {}'.format(customcolours[item],event['name']))    
+                    #print('DEBUG: applying {} to {}'.format(customcolours[item],event['name']))
                     event.fillcolour = customcolours[item]
                     event.customcolour = customcolours[item]
                     #print('DEBUG: fill colour = {}'.format(event.fillcolour))
@@ -112,9 +112,9 @@ def get_colours(df,
 
     cmaps = {'fill':cmap_fill,'border':cmap_border,'custom':customcolours}
     # convert all notna colors to hex
-    
+
     for colourcolumn in ('fillcolour', 'bordercolour','customcolour'):
         df.loc[df[colourcolumn].notna(),colourcolumn] = df.loc[
             df[colourcolumn].notna(),colourcolumn].map(colors.to_hex)
-    
+
     return df, cmaps

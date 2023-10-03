@@ -69,7 +69,7 @@ def import_excel(file,
 
     sheet : str, optional
         The default is 0.
-    **kwargs : 
+    **kwargs :
 
     Returns
     -------
@@ -94,7 +94,7 @@ def import_list(data,
                 ):
     """
     import a list and generate a dataframe
-    uses the first item as column names 
+    uses the first item as column names
     and trys to convert start and end to datetime
 
     Parameters

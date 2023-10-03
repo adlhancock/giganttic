@@ -53,7 +53,7 @@ def giganttic(input_data='Auto',
 
     def import_data(input_data,**kwargs):
         # import the data
-    
+
         # import a list
         if isinstance(input_data, list):
             dataframe = gt.import_list(input_data)
@@ -62,12 +62,12 @@ def giganttic(input_data='Auto',
             inputfile = input_data
         else:
             raise ValueError("input must be list or string with path to file")
-        
+
         if input_data == 'Auto':
             inputfile = gt.choosefile()
             input_data = inputfile
             print(f'DEBUG: {inputfile}')
-        
+
         # import a file
         if inputfile == 'na':
             pass
@@ -81,9 +81,9 @@ def giganttic(input_data='Auto',
             dataframe = gt.import_mpp_xml(inputfile)
         else:
             raise ValueError(f"inputfile must be .csv, .xlsx, or mpp .xml file not {inputfile}")
-    
+
         return dataframe
-    
+
     def make_default_string(inputfile,title):
         # create a default string to use for naming
         if isinstance(inputfile, str) and os.path.exists(inputfile):
@@ -92,21 +92,21 @@ def giganttic(input_data='Auto',
             defaultstring = 'list_data'
         else:
             defaultstring = "Gantt Chart"
-    
+
         if title == 'Auto'    :
             title = defaultstring
         return defaultstring
-    
+
     def manage_data(dataframe,**kwargs):
         #filter and manipulate the data
         if filter_string is not None:
             dataframe = gt.filter_data(dataframe,filter_string[0],filter_string[1])
-            
+
         # flatten milestones if requested
         if kwargs.get('flatten_milestones',False) is True:
             dataframe = gt.flatten_milestones(dataframe)
         return dataframe
-    
+
     def save_files(fig,outputfile=None):
         # save the figureure
         if outputfile is not None:
@@ -114,7 +114,7 @@ def giganttic(input_data='Auto',
                 outputfile = f'{defaultstring}.png'
             plt.savefig(outputfile)
         return outputfile
-        
+
     dataframe = import_data(input_data, **kwargs)
     defaultstring = make_default_string(input_data, title)
     dataframe = manage_data(dataframe, **kwargs)
@@ -128,7 +128,7 @@ def giganttic(input_data='Auto',
 
     axis, figure = plotting_function(dataframe,title=title,**kwargs)
     outputfile = save_files(figure,outputfile)
-    
+
     output = dict(
         data = dataframe,
         axis = axis,

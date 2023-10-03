@@ -83,7 +83,7 @@ def extract_milestones(df,
             #print(newrow)
             #input()
             '''
-            
+
             newrow = pd.DataFrame({
                 'row_type' : 'Milestone',
                 'name' : '({}) {}'.format(ms,row["name"]),
@@ -140,10 +140,10 @@ def autopopulate_milestones(df):
     return df
 
 def flatten_milestones(df):
-    """ 
-    returns the dataframe with additional columns ylabel and yvalue 
-    which clears the milestone labels and puts 
-    them in a single line below the main task bar 
+    """
+    returns the dataframe with additional columns ylabel and yvalue
+    which clears the milestone labels and puts
+    them in a single line below the main task bar
 
     Parameters
     ----------
