@@ -9,13 +9,13 @@ Created on Fri May  5 08:30:31 2023
 from datetime import datetime as dt
 import pandas as pd
 
+
 def get_datestring():
     """ uses dt.now() to return a yyymmdd string
     """
-    timenow = dt.now()
-    return timenow.strftime("%Y%m%d")
 
-#%% data modification
+    return dt.now().strftime("%Y%m%d")
+
 def filter_data(df,column,regex):
     """
     filters dataframe and reindexes
@@ -65,13 +65,29 @@ def extract_milestones(df,
     df['row_type'] = 'Activity'
     for ms_number, ms in enumerate(milestone_columns):
         ms_id = str(ms_number).zfill(4)
-        activities_with_this_ms = df[pd.notna(df[ms])]
+        #activities_with_this_ms = df[pd.notna(df[ms])]
+        activities_with_this_ms = df.loc[df[ms].notna()]
         for row_number, row in activities_with_this_ms.iterrows():
         #for row in activities_with_this_ms:
+            '''
+            newrow = row.copy()
+            newrow.row_type = 'Milestone'
+            newrow['name'] = f'({ms})'
+            newrow.activity_id = row['activity_id']
+            newrow.ordering = row['activity_id'] + f'.{ms_id}'
+            newrow.start = row[ms]
+            newrow.end = row[ms]
+            newrow.miilestone = ms
+            #newrow.loc[:,milestone_columns] = float('nan')
+            #newrow.set_index(row.ordering)
+            #print(newrow)
+            #input()
+            '''
+            
             newrow = pd.DataFrame({
                 'row_type' : 'Milestone',
-                #'name' : row['name'] + ' ({})'.format(ms),
-                'name' : f'({ms})',
+                'name' : '({}) {}'.format(ms,row["name"]),
+                #'ylabel' : f'({ms})',
                 'activity_id': row['activity_id'],
                 #'milestone_id': ms_id,
                 'ordering': row['activity_id'] + f'.{ms_id}',
@@ -82,7 +98,14 @@ def extract_milestones(df,
                 },
                 index=['ordering']
                 )
+            for column in row.keys():
+                if column not in newrow.keys():
+                    newrow[column] = row[column]
+            for m in milestone_columns:
+                newrow[m] = float('nan')
             df = pd.concat([df,newrow])
+            df = df[df.end.notna()]
+    df = df.drop_duplicates()
     df = df.sort_values('ordering').reset_index(drop=True)
     return df
 
@@ -101,7 +124,7 @@ def assign_activity_ids(df):
     except:
         raise AssertionError('activity_id must be numerical')
     return df
-    
+
 def autopopulate_milestones(df):
     """ tries to autopopulate milestones by looking for similarities in names"""
     if 'row_type' not in df.columns:
@@ -132,9 +155,9 @@ def flatten_milestones(df):
     """
     df = categorise_rows(df)
     df = assign_activity_ids(df)
-    
+
     df['ylabel'] = df.name
-    
+
     # try to autopopulate milestone labels if they're missing
     if 'milestone' not in df.columns:
         print('WARNING: no milestone column in dataframe. Trying to autopopulate')

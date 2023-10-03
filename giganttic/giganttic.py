@@ -9,21 +9,15 @@ specifically designed for large projects
 import os
 import matplotlib.pyplot as plt
 
-#import giganttic.import_fns as gim
-#from giganttic.data_fns import filter_data
-#from giganttic.plotting_fns import gantt_chart
-
-#from . import import_fns as gim
-#from .data_fns import filter_data, flatten_milestones
-#from .plotting_fns import gantt_chart
 import giganttic as gt
 
 #%% all in one function
 
-def giganttic(inputfile='Auto',
+def giganttic(input_data='Auto',
               outputfile='Auto',
               title='Auto',
               filter_string=None,
+              plot_type='matplotlib',
               **kwargs):
 
     """
@@ -57,48 +51,91 @@ def giganttic(inputfile='Auto',
 
     """
 
-    # import the data
-    if inputfile == 'Auto':
-        inputfile = gt.choosefile()
-
-    if isinstance(inputfile, list):
-        dataframe = gt.import_list(inputfile)
-    elif inputfile.endswith('.csv'):
-        dataframe = gt.import_csv(inputfile,
-                                   headers=kwargs.get('headers',True),
-                                   columns=kwargs.get('columns',None))
-    elif inputfile.endswith('.xlsx'):
-        dataframe = gt.import_excel(inputfile,sheet = kwargs.get('sheet',0))
-    elif inputfile.endswith('.xml'):
-        dataframe = gt.import_mpp_xml(inputfile)
-    else:
-        raise ValueError("input must be list or string with path to .csv, .xlsx, or mpp .xml file")
-
-    # create a default string to use for naming
-    if isinstance(inputfile, str):
-        defaultstring = os.path.basename(inputfile).rsplit('.')[-2]
-    if isinstance(inputfile, list):
-        defaultstring = 'gantt-chart'
-
-    if title == 'Auto'    :
-        title = defaultstring
-
-    #filter and manipulate the data
-    if filter_string is not None:
-        dataframe = gt.filter_data(dataframe,filter_string[0],filter_string[1])
+    def import_data(input_data,**kwargs):
+        # import the data
+    
+        # import a list
+        if isinstance(input_data, list):
+            dataframe = gt.import_list(input_data)
+            inputfile = 'na'
+        elif isinstance(input_data, str):
+            inputfile = input_data
+        else:
+            raise ValueError("input must be list or string with path to file")
         
-    # flatten milestones if requested
-    if kwargs.get('flatten_milestones',False) is True:
-        dataframe = gt.flatten_milestones(dataframe)
+        if input_data == 'Auto':
+            inputfile = gt.choosefile()
+            input_data = inputfile
+            print(f'DEBUG: {inputfile}')
+        
+        # import a file
+        if inputfile == 'na':
+            pass
+        elif inputfile.endswith('.csv'):
+            dataframe = gt.import_csv(inputfile,
+                                       headers=kwargs.get('headers',True),
+                                       columns=kwargs.get('columns',None))
+        elif inputfile.endswith('.xlsx'):
+            dataframe = gt.import_excel(inputfile,sheet = kwargs.get('sheet',0))
+        elif inputfile.endswith('.xml'):
+            dataframe = gt.import_mpp_xml(inputfile)
+        else:
+            raise ValueError(f"inputfile must be .csv, .xlsx, or mpp .xml file not {inputfile}")
+    
+        return dataframe
+    
+    def make_default_string(inputfile,title):
+        # create a default string to use for naming
+        if isinstance(inputfile, str) and os.path.exists(inputfile):
+            defaultstring = os.path.basename(inputfile).rsplit('.')[-2]
+        elif isinstance(inputfile, list):
+            defaultstring = 'list_data'
+        else:
+            defaultstring = "Gantt Chart"
+    
+        if title == 'Auto'    :
+            title = defaultstring
+        return defaultstring
+    
+    def manage_data(dataframe,**kwargs):
+        #filter and manipulate the data
+        if filter_string is not None:
+            dataframe = gt.filter_data(dataframe,filter_string[0],filter_string[1])
+            
+        # flatten milestones if requested
+        if kwargs.get('flatten_milestones',False) is True:
+            dataframe = gt.flatten_milestones(dataframe)
+        return dataframe
+    
+    def save_files(fig,outputfile=None):
+        # save the figureure
+        if outputfile is not None:
+            if outputfile == 'Auto':
+                outputfile = f'{defaultstring}.png'
+            plt.savefig(outputfile)
+        return outputfile
+        
+    dataframe = import_data(input_data, **kwargs)
+    defaultstring = make_default_string(input_data, title)
+    dataframe = manage_data(dataframe, **kwargs)
 
-    # plot the gantt chart
-    axis, figure = gt.gantt_chart(dataframe,title=title,**kwargs)
-    #figure.show()
+    if plot_type == 'matplotlib':
+        plotting_function = gt.gantt_chart
+    elif plot_type == 'plotly':
+        plotting_function = gt.plotly_gantt
+    else:
+        raise ValueError('plot_type must be "matplotlib" or "plotly"')
 
-    # save the figureure
-    if outputfile is not None:
-        if outputfile == 'Auto':
-            outputfile = f'{defaultstring}.png'
-        plt.savefig(outputfile)
+    axis, figure = plotting_function(dataframe,title=title,**kwargs)
+    outputfile = save_files(figure,outputfile)
+    
+    output = dict(
+        data = dataframe,
+        axis = axis,
+        figure = figure,
+        outputfile = outputfile)
 
-    return dataframe, axis, figure
+    if kwargs.get('show_figure',False) is True:
+        figure.show()
+
+    return output

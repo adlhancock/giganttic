@@ -7,22 +7,16 @@ Created on Tue Sep 19 14:53:40 2023
 import pandas as pd
 import giganttic as gt
 from giganttic.plotly_gantt import plotly_gantt as pg
-from shared_functions import latestfile, ukaea_colours
+#from shared_functions import latestfile, ukaea_colours
+from matplotlib import colormaps as cm
 
-path = './input/'
-filestring = "STEP Test Programmes List-"
-inputfile, datestring = latestfile(path,filestring,'csv')
+inputfile = 'exampledata1.csv'
 df = gt.import_csv(inputfile)
-df = df.rename(columns={'Title':'name'})
-milestone_cols = ['T0','T1','T3','T4','T5']
-df[milestone_cols] = df[milestone_cols].apply(pd.to_datetime,dayfirst = True)
-df = gt.data_fns.get_durations(df, milestone_cols)
-df = gt.extract_milestones(df,milestone_cols)
-df['yvalue'] = list(range(len(df)))
-df['ylabel'] = df.name
-df = gt.data_fns.flatten_milestones(df)
 
-df,cmaps = gt.plotting_fns.get_colors(df,cmap=ukaea_colours,fillcolumn='milestone',bordercolumn=None)
+
+df,cmaps = gt.get_colors(df,cmap=cm['viridis'],fillcolumn='name',bordercolumn=None)
 
 #maxrows = 200
-fig = pg(df,rows_to_show=40)
+fig = pg(df,)
+fig.show('browser')
+#fig.write_html('plotly_testing.html')

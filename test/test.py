@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-test sctipt for giganttic 
+test cases for giganttic 
 
 Created on Fri May  5 08:27:58 2023
 
@@ -13,6 +13,7 @@ from matplotlib import pyplot, colormaps
 
 sys.path.insert(0,os.path.abspath('..'))
 import giganttic as gt
+
 
 
 #%% CASES
@@ -75,6 +76,7 @@ def case_4():
     CASE 4: manual file picking with a custom colourmap
     """
     out = gt.giganttic(
+        title = "Case 4",
         cmap_fill=['#F6D44D','#006F45','#0082CA','#C9252C','#002F56','#58585B'],
         fillcolumn='id')
     return out
@@ -111,10 +113,31 @@ def case_5():
 
     return df, ax, fig
 
+def case_6():
+    inputfile = './exampledata1.csv'
+    df = gt.import_csv(inputfile)
+    plot = gt.plotly_gantt(df,
+                           title='Case 6',
+                           fillcolumn='id',
+                           cmap_fill = colormaps['plasma'],
+                           show_rangeslider = True,
+                           yaxis_range_menu = True,
+                           yaxis_ranges = [5,10,15]
+                           )
+    
+    fig = plot[1]
+    fig.update_traces(showlegend=True)
+    fig.show('browser')
+    fig.write_html('./case_6.html')
+    
+    return df, *plot
+
 #%% MAIN
-pyplot.close('all')
-out_1 = case_1()
-out_2 = case_2()
-out_3 = case_3()
-out_4 = case_4()
-out_5 = case_5()
+if __name__ == '__main__':
+    pyplot.close('all')
+    #out_1 = case_1()
+    #out_2 = case_2()
+    #out_3 = case_3()
+    #out_4 = case_4()
+    #out_5 = case_5()
+    out_6 = case_6()

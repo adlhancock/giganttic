@@ -7,7 +7,7 @@ Created on Tue Sep 19 16:18:29 2023
 #import pandas as pd
 from pandas import DataFrame
 from plotly import graph_objects as go
-from .import_fns import import_csv, import_excel, import_mpp_xml, import_list
+from .import_functions import import_csv, import_excel, import_mpp_xml, import_list
 
 class Giganttic():
     figure = {}
