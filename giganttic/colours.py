@@ -56,8 +56,8 @@ def get_colours(df,
     if cmap_border is not None:
         if isinstance(cmap_border, list):
             cmap_border = colors.ListedColormap(cmap_border, 'cmap_border')
-    else:
-        cmap_border = cmap_fill
+        else:
+            cmap_border = cmap_fill
 
     if recolour is True:
         df['fillcolour'] = None
