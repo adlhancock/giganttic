@@ -9,6 +9,8 @@ Created on Fri May  5 08:32:23 2023
 
 from datetime import datetime as dt
 
+import pandas as pd
+
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle, Patch
@@ -44,6 +46,7 @@ def gantt_chart(df,
                      yvalues=None,
                      max_label_length=100,
                      tight_layout=True,
+                     show_figure = False,
                      **kwargs
                      ):
         """ sets up the figure.
@@ -82,7 +85,8 @@ def gantt_chart(df,
             DESCRIPTION.
 
         """
-
+        if show_figure is False: plt.ioff()
+        
         # set the date range
         if dates is None:
             dates = (min(df.start[df.start.notna()]), max(df.end[df.end.notna()]))
@@ -419,37 +423,35 @@ def gantt_chart(df,
         patches = []
         # draw the fill column section of the legend
         if fillcolumn is not None and 'fill' in legend_sections:
+            fill_df = df.loc[df.customcolour.isna(),[fillcolumn,'fillcolour']].drop_duplicates()
+            fill_dict = pd.Series(fill_df.fillcolour.values,index=fill_df[fillcolumn]).to_dict()
+            #print(fill_dict)                                                                        #DEBUG
+            
             fill_title_patch = Patch(
                 color='white', label=f'{fillcolumn}:'.upper()
                 )
             patches.append(fill_title_patch)
-            fill_labels = df[fillcolumn].unique().tolist()
-            for n, i in enumerate(fill_labels):
-                fillcolour = df.loc[
-                    df[fillcolumn]==i,'fillcolour'].unique().tolist()
-                #assert(len(fillcolour) == 1 ), 'inconsistent colours for legend'
-                if len(fillcolour) != 1: print(f'WARNING: legend colours may be incorrect for {i}')
-                fillcolour = fillcolour[0]
-                #print(fillcolour)
-                patch = Patch(color=fillcolour, edgecolor=None, label=i)
-                patches.append(patch)
+            
+            for fill_value in fill_dict:
+                fill_value_patch = Patch(color=fill_dict[fill_value], edgecolor=None, label=fill_value)
+                patches.append(fill_value_patch)
 
         # draw the border colour section of the legend
         if bordercolumn is not None and 'border' in legend_sections:
+            border_df = df.loc[:,[bordercolumn,'bordercolour']].drop_duplicates()
+            border_dict = pd.Series(border_df.bordercolour.values,index=border_df[bordercolumn]).to_dict()
+            #print(border_dict)                                                                      # DEBUG
             border_title_patch = Patch(
                 color='white', label=f'{bordercolumn}:'.upper()
                 )
             patches.append(border_title_patch)
-            border_labels = df[bordercolumn].unique().tolist()
-            for i in border_labels:
-                bordercolour = df.loc[
-                    df[bordercolumn]==i,'bordercolour'].unique().tolist()
-                assert(len(bordercolour) == 1), 'inconsistent border colours for legend'
-                bordercolour = bordercolour[0]
-                #print(bordercolour)
-
-                patch = Patch(facecolor='white', edgecolor=bordercolour, label=i)
-                patches.append(patch)
+            
+            for border_value in border_dict:
+                
+                border_value_patch = Patch(facecolor='white', 
+                                           edgecolor=border_dict[border_value], 
+                                           label=border_value)
+                patches.append(border_value_patch)
 
         # draw the custom colours section of the legend
         if customcolours is not None and 'customcolours' in legend_sections:

@@ -22,7 +22,7 @@ def case_1():
     CASE 1 - import, plot and save separately.
     """
 
-    df = gt.import_csv('./exampledata1.csv')
+    df = gt.import_csv('./input/exampledata1.csv')
 
     ax, fig = gt.gantt_chart(df,
                              title='Example 1',
@@ -30,7 +30,7 @@ def case_1():
                              cmap_fill=colormaps['tab10'],
                              connections=True,
                              nowline = True)
-    fig.savefig('case_1.png')
+    fig.savefig('./output/case_1.png')
     fig.show()
     out = df,ax,fig
     return out
@@ -39,8 +39,8 @@ def case_2():
     """
     CASE 2 all in one with an excel file
     """
-    out = gt.giganttic('exampledata2.xlsx',
-                        'case_2.png',
+    out = gt.giganttic('./input/exampledata2.xlsx',
+                        output_file='./output/case_2.png',
                         'Example 2',
                         default_fill = '#cccccc',
                         cmap_border = colormaps['viridis'],
@@ -68,7 +68,11 @@ def case_3():
         [9,"D","01/01/2027","12/12/2028",3],
         [10,"F","01/01/2027","12/12/2030",2],
         ]
-    out = gt.giganttic(dummydata,'case_3.png','Example 3', connections = False,default_fill='pink')
+    out = gt.giganttic(dummydata,
+                       './output/case_3.png',
+                       'Example 3',
+                       connections = False,
+                       default_fill='navy')
     return out
 
 def case_4():
@@ -76,8 +80,9 @@ def case_4():
     CASE 4: manual file picking with a custom colourmap
     """
     out = gt.giganttic(
+        output_file='./output/case4.png',
         title = "Case 4",
-        cmap_fill=['#F6D44D','#006F45','#0082CA','#C9252C','#002F56','#58585B'],
+        cmap_fill=['red','orange','yellow','green','blue','indigo','violet'],
         fillcolumn='id')
     return out
 
@@ -114,7 +119,7 @@ def case_5():
     return df, ax, fig
 
 def case_6():
-    inputfile = './exampledata1.csv'
+    inputfile = './input/exampledata1.csv'
     df = gt.import_csv(inputfile)
     plot = gt.plotly_gantt(df,
                            title='Case 6',
@@ -128,7 +133,7 @@ def case_6():
     fig = plot[1]
     fig.update_traces(showlegend=True)
     fig.show('browser')
-    fig.write_html('./case_6.html')
+    fig.write_html('./output/case_6.html')
     
     return df, *plot
 

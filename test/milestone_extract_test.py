@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0,os.path.abspath('..'))
 import giganttic as gt
 
-TESTFILE = './exampledata2.xlsx'
+TESTFILE = './input/exampledata2.xlsx'
 dataframe = gt.import_excel(TESTFILE)
 output = gt.extract_milestones(dataframe)
 gt.gantt_chart(output,fill='id')

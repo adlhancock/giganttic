@@ -14,7 +14,7 @@ import giganttic as gt
 #%% all in one function
 
 def giganttic(input_data='Auto',
-              outputfile='Auto',
+              output_file='Auto',
               title='Auto',
               filter_string=None,
               plot_type='matplotlib',
@@ -28,7 +28,7 @@ def giganttic(input_data='Auto',
     ----------
     inputfile: str
         file location or list. Filetypes are .csv, .xlsx, or ms project .xml
-    outputfile: str, optional
+    output_file: str, optional
         where to save the output image. Default is current directory
         and the input filename with .png extension
     title: str, optional
@@ -107,13 +107,13 @@ def giganttic(input_data='Auto',
             dataframe = gt.flatten_milestones(dataframe)
         return dataframe
 
-    def save_files(fig,outputfile=None):
+    def save_files(fig,output_file=None):
         # save the figureure
-        if outputfile is not None:
-            if outputfile == 'Auto':
-                outputfile = f'{defaultstring}.png'
-            plt.savefig(outputfile)
-        return outputfile
+        if output_file is not None:
+            if output_file == 'Auto':
+                output_file = f'{defaultstring}.png'
+            plt.savefig(output_file)
+        return output_file
 
     dataframe = import_data(input_data, **kwargs)
     defaultstring = make_default_string(input_data, title)
@@ -127,13 +127,13 @@ def giganttic(input_data='Auto',
         raise ValueError('plot_type must be "matplotlib" or "plotly"')
 
     axis, figure = plotting_function(dataframe,title=title,**kwargs)
-    outputfile = save_files(figure,outputfile)
+    output_file = save_files(figure,output_file)
 
     output = dict(
         data = dataframe,
         axis = axis,
         figure = figure,
-        outputfile = outputfile)
+        output_file = output_file)
 
     if kwargs.get('show_figure',False) is True:
         figure.show()
