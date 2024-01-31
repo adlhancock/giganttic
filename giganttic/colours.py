@@ -56,7 +56,11 @@ def get_colours(df,
         """ creates a dictionary to populate a colour column"""
 
         values = df_column.unique().tolist()
-        nvalues, ncolours = len(values), len(colourmap.colors)
+        nvalues = len(values)
+        try:
+            ncolours = int(colourmap.colors)
+        except AttributeError:
+            ncolours = int(colourmap.N)
         if nvalues < ncolours*0.5 and ncolours > 30:
             # case - lots of colours and not many values
             colours = [colourmap(x/nvalues) for x in range(nvalues)]

@@ -47,7 +47,7 @@ def plot_by_column(df,column,plot_function=gantt_chart,**kwargs):
 
     return figure_details
 
-def get_fontsize(row_count,fontsizes = list(zip((5,10,20,50,100,500,1000),(12,10,9,8,6,4,3)))):
+def get_fontsize(row_count,fontsizes = list(zip((5,10,20,50,100,500,1000),(12,10,9,8,7,6,5)))):
     """ returns a font size based on a number of rows"""
 
     fontsize = 12

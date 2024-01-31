@@ -202,7 +202,7 @@ def gantt_chart(df,
         figure_dimensions = figure_sizes.get(figure_size,
                                              figure_sizes['default'])
 
-        #print(f'DEBUG:{rows:<5} {figure_size:<10} {figure_dimensions}')
+        print(f'DEBUG:{rows:<5} {figure_size:<10} {figure_dimensions}')
         dimensions = {'size':figure_size,
                       'rows':rows,
                       'height':figure_dimensions.get('figure_height'),

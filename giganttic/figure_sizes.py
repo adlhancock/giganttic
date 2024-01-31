@@ -4,7 +4,7 @@ Created on Mon Sep 25 23:29:20 2023
 
 @author: dhancock
 """
-
+_verbose = True
 def get_figure_sizes(rows, ratio = 1.414, short_side=10):
 
     figure_sizes = {
@@ -30,19 +30,19 @@ def get_figure_sizes(rows, ratio = 1.414, short_side=10):
             'max_rows':120,
             'font_size':6,
             'figure_width':short_side,
-            'figure_height':rows/1.5, # tall portrait ratio
+            'figure_height':rows/2, # tall portrait ratio
             'figure_dpi':80},
         'huge':{
             'max_rows':240,
             'font_size':4,
             'figure_width':short_side,
-            'figure_height':rows/2, # very tall portrait ratio
+            'figure_height':rows/1.5, # very tall portrait ratio
             'figure_dpi':70},
         'giant':{
             'max_rows':500,
-            'font_size':3,
+            'font_size':4,
             'figure_width':short_side/1.5,
-            'figure_height':rows/2.5, # try to squeeze it all in
+            'figure_height':rows/3, # try to squeeze it all in
             'figure_dpi':60},
         'nearly_illegible':{
             'max_rows':900,
