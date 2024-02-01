@@ -1,0 +1,26 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "giganttic"
+version = "0.0.1"
+dependencies = [
+	"numpy",
+	"matplotlib",
+	"plotly",
+	"pandas",
+	"openpyxl",
+	"xml2dict",
+	"tkinter",
+]
+requires-python = ">=3.6"
+authors = [{name = "adlhancock", email = "adlhancock@pm.me"}]
+description = ""
+readme = "README.md"
+license = {file = "LICENSE.txt"}
+keywords = ["gantt", "plan", "interactive", "project management"]
+
+[project.urls]
+Homepage = "https://github.com/adlhancock/giganttic"
+Repository = "https://github.com/adlhancock/giganttic.git"
