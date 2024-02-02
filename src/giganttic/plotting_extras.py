@@ -35,11 +35,10 @@ def plot_by_column(df, column, plot_function=gantt_chart, **kwargs):
                                     **kwargs
                                     )
             df_groups[group] = df_group
-            figure_details[group] = dict(
-                axis=ax,
-                figure=fig,
-                title=graphtitle,
-                data=df_group)
+            figure_details[group] = {"axis": ax,
+                                     "figure": fig,
+                                     "title": graphtitle,
+                                     "data": df_group}
             plt.close()
 
     return figure_details

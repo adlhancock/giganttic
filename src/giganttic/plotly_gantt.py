@@ -38,21 +38,16 @@ def gantt_chart(df,
             title=title,
             showlegend=kwargs.get('showlegend', False),
             plot_bgcolor='# ffffff',
-            yaxis=dict(
-                         # range = [rows_to_show+1, -1],
-                         autorange='reversed',
-                         ticktext=df.ylabel,
-                         tickvals=df.yvalue,
-                         tickfont=dict(size=get_fontsize(rows_to_show)),
-                         # gridcolor='# cccccc'
-                         gridcolor=None
-                         ),
-            xaxis=dict(
-                         # range=kwargs.get('dates', [min(df.start), max(df.end)]),
-                         type='date',
-                         gridcolor='# cccccc',
-                         rangeslider=dict(visible=show_rangeslider,
-                                          thickness=rangeslider_thickness)),
+            yaxis={"autorange": 'reversed',
+                   "ticktext": df.ylabel,
+                   "tickvals": df.yvalue,
+                   "tickfont": dict(size=get_fontsize(rows_to_show)),
+                   "gridcolor": None},
+            xaxis={"type": 'date',
+                   "gridcolor": '# cccccc',
+                   "rangeslider": {"visible": show_rangeslider,
+                                   "thickness": rangeslider_thickness}
+                   },
             dragmode='pan')
         return fig
 
@@ -81,9 +76,8 @@ def gantt_chart(df,
                 fig.add_scatter(
                     x=[start, finish, finish, start, start],
                     y=[top, top, bottom, bottom, top],
-                    line=dict(
-                        color=bordercolour,
-                        width=borderwidth),
+                    line={"color": bordercolour,
+                          "width": borderwidth},
                     fill='toself',
                     mode='lines',
                     fillcolor=fillcolour,
@@ -118,7 +112,6 @@ def gantt_chart(df,
             ranges[f'{n} rows'] = [n+1, -1]
             fontsizes[f'{n} rows'] = get_fontsize(n)
 
-        # print(f'DEBUG: RANGES = {ranges}')
         yaxis_range_buttons = []
         for r in ranges:
             yaxis_range_buttons.append(
@@ -127,7 +120,6 @@ def gantt_chart(df,
                           {'yaxis.range': ranges[r],
                            'yaxis.tickfont.size': fontsizes[r]}],
                     label=r,
-                    # method="relayout"
                     method='update'
                     ))
 

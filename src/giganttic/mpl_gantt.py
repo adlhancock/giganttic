@@ -351,7 +351,7 @@ def gantt_chart(df,
                 predecessor_row = df[df.id == predecessor]
                 x_start = float(mdates.date2num(predecessor_row.end))
                 y_start = float(predecessor_row.yvalue)
-                # print(f'DEBUG:\n\t x = {x_start},{x_end}\n\t y = {y_start},{y_end}')
+                # print(f'DEBUG:\n\t x = {x_start}, {x_end}\n\t y = {y_start}, {y_end}')
                 if y_start != y_end:
                     if x_end < x_start:
                         connection_line_colour = line_colour_error
