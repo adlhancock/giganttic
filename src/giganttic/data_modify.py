@@ -8,7 +8,6 @@ Created on Fri May  5 08:30:31 2023
 """
 from datetime import datetime as dt
 import pandas as pd
-import numpy as np
 
 
 def get_datestring():

@@ -11,9 +11,9 @@ from .colours import get_colours
 from .plotting_extras import get_fontsize
 
 
-def plotly_gantt(df,
-                 title='plotly giganttic',
-                 **kwargs):
+def gantt_chart(df,
+                title='plotly giganttic',
+                **kwargs):
     """ produces a gantt chart using plotly"""
 
     def set_up_figure(df, **kwargs):

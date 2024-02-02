@@ -8,10 +8,8 @@ specifically designed for large projects
 
 import os
 import matplotlib.pyplot as plt
-
 import giganttic as gt
 
-#%% all in one function
 
 def giganttic(input_data='Auto',
               output_file='Auto',
@@ -19,7 +17,6 @@ def giganttic(input_data='Auto',
               filter_string=None,
               plot_type='matplotlib',
               **kwargs):
-
     """
     all in one 'giganttic' function which takes an input and output path
     to import a range of filetypes and generate a giganntic gantt chart.
@@ -51,7 +48,7 @@ def giganttic(input_data='Auto',
 
     """
 
-    def import_data(input_data,**kwargs):
+    def import_data(input_data, **kwargs):
         # import the data
 
         # import a list
@@ -73,10 +70,10 @@ def giganttic(input_data='Auto',
             pass
         elif inputfile.endswith('.csv'):
             dataframe = gt.import_csv(inputfile,
-                                       headers=kwargs.get('headers',True),
-                                       columns=kwargs.get('columns',None))
+                                      headers=kwargs.get('headers', True),
+                                      columns=kwargs.get('columns', None))
         elif inputfile.endswith('.xlsx'):
-            dataframe = gt.import_excel(inputfile,sheet = kwargs.get('sheet',0))
+            dataframe = gt.import_excel(inputfile, sheet=kwargs.get('sheet', 0))
         elif inputfile.endswith('.xml'):
             dataframe = gt.import_mpp_xml(inputfile)
         else:
@@ -84,7 +81,7 @@ def giganttic(input_data='Auto',
 
         return dataframe
 
-    def make_default_string(inputfile,title):
+    def make_default_string(inputfile, title):
         # create a default string to use for naming
         if isinstance(inputfile, str) and os.path.exists(inputfile):
             defaultstring = os.path.basename(inputfile).rsplit('.')[-2]
@@ -93,21 +90,21 @@ def giganttic(input_data='Auto',
         else:
             defaultstring = "Gantt Chart"
 
-        if title == 'Auto'    :
+        if title == 'Auto':
             title = defaultstring
         return defaultstring
 
-    def manage_data(dataframe,**kwargs):
-        #filter and manipulate the data
+    def manage_data(dataframe, **kwargs):
+        # filter and manipulate the data
         if filter_string is not None:
-            dataframe = gt.filter_data(dataframe,filter_string[0],filter_string[1])
+            dataframe = gt.filter_data(dataframe, filter_string[0], filter_string[1])
 
         # flatten milestones if requested
-        if kwargs.get('flatten_milestones',False) is True:
+        if kwargs.get('flatten_milestones', False) is True:
             dataframe = gt.flatten_milestones(dataframe)
         return dataframe
 
-    def save_files(fig,output_file=None):
+    def save_files(fig, output_file=None):
         # save the figureure
         if output_file is not None:
             if output_file == 'Auto':
@@ -126,16 +123,12 @@ def giganttic(input_data='Auto',
     else:
         raise ValueError('plot_type must be "matplotlib" or "plotly"')
 
-    axis, figure = plotting_function(dataframe,title=title,**kwargs)
-    output_file = save_files(figure,output_file)
+    axis, figure = plotting_function(dataframe, title=title, **kwargs)
+    output_file = save_files(figure, output_file)
 
-    output = dict(
-        data = dataframe,
-        axis = axis,
-        figure = figure,
-        output_file = output_file)
+    output = dict(data=dataframe, axis=axis, figure=figure, output_file=output_file)
 
-    if kwargs.get('show_figure',False) is True:
+    if kwargs.get('show_figure', False) is True:
         figure.show()
 
     return output
