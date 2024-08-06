@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle, Patch
 
-from .figure_sizes import get_figure_sizes
+from .figure_dimensions import get_figure_dimensions
 from .colours import get_colours
 
 
@@ -93,7 +93,7 @@ def gantt_chart(df,
         if dates[0] == dates[1]:
             dates = [dt(2022, 1, 1), dt(2050, 1, 1)]
 
-        # set up figure
+        # get the yvalues and labels
         if yvalues is None:
             df['yvalue'] = df.get('yvalue', list(range(len(df))))
             df['ylabel'] = df.get('ylabel', df.activity_name)
@@ -102,8 +102,11 @@ def gantt_chart(df,
                 lambda x: str(x)[:maxlength-5]+'...' if len(str(x)) > maxlength else str(x))
             yvalues = [df.yvalue.tolist(), df.ylabel.tolist()]
 
-        dimensions = get_figure_dimensions(df, **kwargs)
+        # get figure and font size and dpi
+        n_rows = len(yvalues)
+        dimensions = get_figure_dimensions(n_rows)
         # print(f'DEBUG: {dimensions}')
+
         plt.rcParams['font.size'] = dimensions['font_size']
         plt.rcParams['figure.dpi'] = dimensions['dpi']
         plt.rcParams['figure.figsize'] = [dimensions['width'], dimensions['height']]
@@ -145,69 +148,6 @@ def gantt_chart(df,
             plt.tight_layout()
 
         return ax, fig
-
-    def get_figure_dimensions(df, **kwargs):
-        """ works out figure size, dpi, and font size from number of rows
-        Parameters
-        ----------
-        df
-
-        Returns
-        -------
-        dimensions
-
-        """
-        yvalues = kwargs.get('yvalues', None)
-        # work out how many rows are in the figure
-        if 'yvalue' in df.columns:
-            rows = len(df.yvalue.unique())
-            # print('DEBUG: rows set by df.yvalue')
-        elif yvalues is not None:
-            rows = len(set(yvalues[0]))
-        else:
-            rows = len(df)
-
-        # set figure ratio
-        figure_ratio = kwargs.get('figure_ratio', 'print')
-        if figure_ratio == 'screen':
-            ratio = 1.78  # assuming widescreen
-        elif figure_ratio == 'print':
-            ratio = 1.414  # A4 ratio is sqrt 2
-        elif isinstance(figure_ratio, (float, int)):
-            ratio = figure_ratio
-        else:
-            raise AssertionError('figure ratio must be "screen", "print", or float')
-
-        figure_sizes = get_figure_sizes(rows, ratio, short_side=10)
-        figure_size = kwargs.get('figure_size', None)
-
-        if isinstance(figure_size, list):
-            figure_width, figure_height = figure_size
-            figure_size = 'manual'
-        else:
-            # use the max_row values in the figure_sizes dict to set figure_size
-            size_names = list(figure_sizes.keys())
-            size_names.remove('default')
-            max_row_values = [figure_sizes[size_name]['max_rows']
-                              for size_name in size_names]
-            size_dictionary = dict(zip(max_row_values, size_names))
-            for max_size in sorted(max_row_values, reverse=True):
-                if rows < max_size:
-                    figure_size = size_dictionary[max_size]
-
-        # apply the figure dimensions
-        figure_dimensions = figure_sizes.get(figure_size,
-                                             figure_sizes['default'])
-
-        print(f'DEBUG:{rows:<5} {figure_size:<10} {figure_dimensions}')
-        dimensions = {'size': figure_size,
-                      'rows': rows,
-                      'height': figure_dimensions.get('figure_height'),
-                      'width': figure_dimensions.get('figure_width'),
-                      'font_size': kwargs.get('font_size', figure_dimensions.get('font_size')),
-                      'dpi': kwargs.get('figure_dpi', figure_dimensions.get('figure_dpi'))}
-
-        return dimensions
 
     def add_extra_labels(df, label_column='milestone', **kwargs):
         """

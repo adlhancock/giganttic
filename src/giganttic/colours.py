@@ -11,6 +11,7 @@ from matplotlib import colors, colormaps
 
 
 def get_colours(df,
+                manual_colours=False,
                 fillcolumn=None,
                 bordercolumn=None,
                 customcolour_column='activity_name',
@@ -22,6 +23,9 @@ def get_colours(df,
                 recolour=False,
                 **kwargs
                 ):
+    if manual_colours is True:
+        print('manual colours')
+        return df, "Manual colours selected"
     """
     gets colours for the dataframe
 
@@ -58,7 +62,7 @@ def get_colours(df,
         values = df_column.unique().tolist()
         nvalues = len(values)
         try:
-            ncolours = int(colourmap.colors)
+            ncolours = int(len(colourmap.colors))
         except AttributeError:
             ncolours = int(colourmap.N)
         if nvalues < ncolours*0.5 and ncolours > 30:

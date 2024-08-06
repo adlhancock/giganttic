@@ -13,7 +13,7 @@ import pandas as pd
 import xmltodict
 
 
-def import_csv(file, headers=True, columns=None):
+def import_csv(file, headers=True, columns=None, **kwargs):
     """
     headers: if the first line of the csv file has headers
     columns: if headers is false, use this list as dataframe columns
@@ -27,11 +27,10 @@ def import_csv(file, headers=True, columns=None):
     events = nestedlist
 
     # create dataframe
-
-    if headers is True:
+    if headers is True:  # read the top row of the file to get headers
         dataframe = pd.DataFrame(events[1:])
         dataframe.columns = events[0]
-    else:
+    else:  # manually apply column labels based on keyword or assumption
         dataframe = pd.DataFrame(events)
         if columns is None:
             columns = ["id", "activity_name", "start", "end"]
@@ -41,14 +40,26 @@ def import_csv(file, headers=True, columns=None):
                 print(f'Assumed columns were {columns}')
                 raise
 
-    if all(["start" in dataframe.columns, "end" in dataframe.columns]):
+    if all([
+            "start" in dataframe.columns,
+            "end" in dataframe.columns,
+            ]):
+        if kwargs.get('numerical_dates', False):
+            dataframe.start = pd.to_numeric(dataframe.start, errors='coerce')
+            dataframe.end = pd.to_numeric(dataframe.end, errors='coerce')
+            dataframe.start = dataframe.start.fillna(dataframe.end)
+            dataframe.end = dataframe.end.fillna(dataframe.start)
+        else:
+            # dataframe.start = pd.to_datetime(dataframe.start, dayfirst=True, format='mixed')
+            # dataframe.end = pd.to_datetime(dataframe.end, dayfirst=True, format='mixed')
+            dataframe.start = pd.to_datetime(dataframe.start, dayfirst=True, format='%d/%m/%Y')
+            dataframe.end = pd.to_datetime(dataframe.end, dayfirst=True, format='%d/%m/%Y')
 
-        # dataframe.start = pd.to_datetime(dataframe.start, dayfirst=True, format='mixed')
-        # dataframe.end = pd.to_datetime(dataframe.end, dayfirst=True, format='mixed')
-        dataframe.start = pd.to_datetime(dataframe.start, dayfirst=True, format='%d/%m/%Y')
-        dataframe.end = pd.to_datetime(dataframe.end, dayfirst=True, format='%d/%m/%Y')
     else:
         print(f"{__name__}: WARNING - no start and end values defined")
+
+    if 'yvalue' in dataframe.columns:
+        dataframe.yvalue = pd.to_numeric(dataframe.yvalue, errors='coerce')
 
     return dataframe
 

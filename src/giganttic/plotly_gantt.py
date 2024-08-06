@@ -9,6 +9,8 @@ Created on Tue Sep 19 13:51:40 2023
 import plotly.graph_objects as go
 from .colours import get_colours
 from .plotting_extras import get_fontsize
+# from datetime import timedelta
+# import pandas as pd
 
 
 def gantt_chart(df,
@@ -17,23 +19,35 @@ def gantt_chart(df,
     """ produces a gantt chart using plotly"""
 
     def set_up_figure(df, **kwargs):
+
+        # how many rows to show
         rows_to_show = kwargs.get('rows_to_show', 'all')
         if rows_to_show == 'all':
             rows_to_show = df.get('yvalue', df.get('activity_name')).size
 
+        # Range Slider
         show_rangeslider = kwargs.get('show_rangeslider', False)
         if show_rangeslider is False:
             rangeslider_thickness = 0
         else:
             rangeslider_thickness = kwargs.get('rangeslider_thickness', 0.05)
 
+        # set up y values and labels
         if 'yvalue' not in df.columns and kwargs.get('yvalues') is None:
             # print('data has no yvalues, autogenerating')
             df['yvalue'] = df.index.tolist()
         if 'ylabel' not in df.columns and kwargs.get('ylabels') is None:
             df['ylabel'] = df['activity_name'].copy()
 
+        # initiate figure
         fig = go.Figure()
+
+        # option to allow numerical rather than date formatted x axis.
+        if kwargs.get('numerical_dates', False) is True:
+            axistype = 'linear'
+        else:
+            axistype = 'date'
+
         fig.update_layout(
             title=title,
             showlegend=kwargs.get('showlegend', False),
@@ -43,17 +57,22 @@ def gantt_chart(df,
                    "tickvals": df.yvalue,
                    "tickfont": dict(size=get_fontsize(rows_to_show)),
                    "gridcolor": None},
-            xaxis={"type": 'date',
+            xaxis={"type": axistype,
                    "gridcolor": '# cccccc',
                    "rangeslider": {"visible": show_rangeslider,
                                    "thickness": rangeslider_thickness}
                    },
-            dragmode='pan')
+            dragmode='pan'
+            )
+        fig.update_layout(
+            xaxis=dict(range=[min(df.start), max(df.end)]),
+            yaxis=dict(range=[max(df.yvalue)+1, min(df.yvalue)-1])
+            )
+
         return fig
 
     def plot_shapes(df, fig, **kwargs):
-        bar_size = kwargs.get('bar_size', 0.5)
-        ms_size = kwargs.get('ms_size', 8)
+
         default_fill = kwargs.get('default_fill', "LightSkyBlue")
         default_border = kwargs.get('default_border', None)
 
@@ -61,42 +80,151 @@ def gantt_chart(df,
             start = row.start
             finish = row.end
             yvalue = row.yvalue
-            top = yvalue+bar_size/2
-            bottom = yvalue-bar_size/2
             fillcolour = row.get('fillcolour', default_fill)
             bordercolour = row.get('bordercolour', default_border)
-            # hovertext = row.get('hovertext', row.get('activity_name', ''))
+            bar_size = float(row.get('bar_size', kwargs.get('bar_size', 20)))
+            ms_size = float(row.get('ms_size', kwargs.get('ms_size', 8)))
+
             if bordercolour is None:
                 borderwidth = 0
             else:
                 borderwidth = kwargs.get('borderwidth', 2)
 
-            if start != finish:
-                # plot a bar
-                fig.add_scatter(
-                    x=[start, finish, finish, start, start],
-                    y=[top, top, bottom, bottom, top],
-                    line={"color": bordercolour,
-                          "width": borderwidth},
-                    fill='toself',
-                    mode='lines',
-                    fillcolor=fillcolour,
-                    name=row.get('activity_name', i),
-                    # hovertext='TEST TEXT'
-                    # hoverlabel='TEST'
-                    )
-            else:
-                # plot a diamond
-                mslabel = row.get('milestone', '')
+            if start == finish:   # zero-length events are milestones
+                # plot a diamond if it's a milestone
+                mslabel = row.get('milestone', row.get('activity_name', ''))
                 fig.add_scatter(x=[finish], y=[yvalue],
                                 text=[mslabel],
-                                textposition='bottom center',
+                                textposition='top center',
                                 marker=dict(
                                     size=ms_size,
                                     symbol='diamond',
                                     color=fillcolour),
                                 mode='markers+text',
                                 name=row.get('activity_name', i))
+
+            else:  # everything else is a bar
+                # plot a path
+                fig.add_shape(
+                    type='path',
+                    path='M {} {} L {} {}'.format(start, yvalue, finish, yvalue),
+                    line=dict(color=row.fillcolour, width=bar_size),
+                    fillcolor=None
+                    )
+
+                # add borders
+                if borderwidth != 0:
+                    for yoffset in [bar_size, -bar_size]:
+                        fig.add_shape(
+                            type='path',
+                            path='M {} {} L {} {}'.format(
+                                start, yvalue+yoffset, finish, yvalue+yoffset),
+                            line=dict(color=row.bordercolour, width=borderwidth),
+                            fillcolor=None
+                            )
+
+                """
+                # add bar labels - white, inside
+                if kwargs.get("bar_labels", False) is True:
+                    middle = start + ((finish - start)/2)
+                    fig.add_annotation(
+                        x=middle,
+                        y=yvalue,
+                        # yshift=-16,
+                        text=row.get('activity_name', i),
+                        showarrow=False,
+                        font=dict(
+                            size=0.5*bar_size,
+                            color='white',
+                            )
+                        )
+                """
+                # add bar labels - black, on top
+                if kwargs.get("bar_labels", False) is True:
+                    fig.add_annotation(
+                        x=start,
+                        y=yvalue,
+                        yshift=bar_size,
+                        xshift=bar_size,
+                        text=row.get('activity_name', i),
+                        showarrow=False,
+                        font=dict(
+                            size=14,
+                            color=kwargs.get('labelcolour','black'),
+                            ),
+                        align='left',
+                        xanchor='left'
+                        )
+                    
+
+            # Add link lines
+            if all([
+                    kwargs.get("plot_dependencies", False) is True,
+                    ]):
+                startx = float(row.end)
+                endx = float(row.end)
+                starty = float(row.yvalue)
+                endy = float(row.depend_yvalue)
+                if row.start == row.end:
+                    arrow_size = 2
+                else:
+                    arrow_size = kwargs.get('arrow_size', bar_size*0.7)
+
+                fig.add_annotation(
+                    ax=startx,
+                    ay=starty,
+                    ayref="y",
+                    axref="x",
+                    startstandoff=bar_size/3,
+                    x=endx,
+                    y=endy,
+                    xref="x",
+                    yref="y",
+                    standoff=bar_size/2,
+                    text=None,
+                    showarrow=True,
+                    arrowhead=4,
+                    arrowsize=0.4,
+                    arrowwidth=arrow_size,
+                    arrowcolor=row.fillcolour,
+                    visible=True,
+                    )
+                
+                """
+                if row.start != row.end:
+                    fig.add_shape(
+                        type='circle',
+                        xanchor=startx,
+                        yanchor=starty,
+                        x0=-bar_size/2,
+                        y0=-bar_size/2,
+                        x1=bar_size/2,
+                        y1=bar_size/2,
+                        xref='x',
+                        yref='y',
+                        xsizemode='pixel',
+                        ysizemode='pixel',
+                        fillcolor=row.fillcolour,
+                        line=dict(width=0),
+                        )
+                """
+
+                """
+                link_path = 'M {} {} L {} {} Q {} {} {} {} L {} {}'.format(
+                    startx-0.1, starty,  # starting point
+                    startx, starty,  # start of curve
+                    startx, starty,  # middle of curve
+                    endx, (starty + endy) / 2,  # end of curve
+                    endx, endy)  # end of line
+
+                # Add the arrow shape
+                fig.add_shape(
+                    type='path',
+                    path=link_path,
+                    line=dict(color=row.fillcolour, width=bar_size),
+                    fillcolor=None
+                )
+                """
 
     def make_yaxis_range_menu(df,
                               yaxis_ranges=[5, 10, 50, 100, 1000],
@@ -191,10 +319,12 @@ def gantt_chart(df,
                            )
         return filter_menu
 
+    # main function
     fig = set_up_figure(df, **kwargs)
     df, cmaps = get_colours(df, **kwargs)
     plot_shapes(df, fig, **kwargs)
-    # fig.update_traces(textfont_size = get_fontsize(rows_to_show))
+
+    # optional clever menus
     menus = []
     if kwargs.get('filters_menu', False) is True:
         menus.append(make_filter_menu(df, **kwargs))
