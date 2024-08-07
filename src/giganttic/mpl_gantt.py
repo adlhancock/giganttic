@@ -7,16 +7,27 @@ Created on Fri May  5 08:32:23 2023
 @author: dhancock
 """
 
+import os
 from datetime import datetime as dt
-
 import pandas as pd
-
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.patches import Rectangle, Patch
 
-from .figure_dimensions import get_figure_dimensions
 from .colours import get_colours
+
+_verbose = False
+
+
+def get_figure_dimensions(rows):
+
+    figure_size_filename = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                        'figure_sizes.csv')
+    figure_sizes = pd.read_csv(figure_size_filename, header=0)
+    dimensions = figure_sizes.loc[
+        figure_sizes.max_rows == min(figure_sizes.max_rows, key=lambda x: abs(x-rows))]
+
+    return dimensions.iloc[0].to_dict()
 
 
 def gantt_chart(df,
@@ -24,7 +35,7 @@ def gantt_chart(df,
                 legend=False,
                 nowline=True,
                 connections=False,
-                extra_labels=False,
+                bar_labels=False,
                 **kwargs
                 ):
     """ the main gantt chart function.
@@ -105,20 +116,30 @@ def gantt_chart(df,
         # get figure and font size and dpi
         n_rows = len(yvalues)
         dimensions = get_figure_dimensions(n_rows)
-        # print(f'DEBUG: {dimensions}')
+
+        if _verbose is True:
+            print(_verbose)
+            print(f'DEBUG: {dimensions}')
 
         plt.rcParams['font.size'] = dimensions['font_size']
+        plt.rcParams['text.color'] = kwargs.get('label_colour', 'black')
         plt.rcParams['figure.dpi'] = dimensions['dpi']
-        plt.rcParams['figure.figsize'] = [dimensions['width'], dimensions['height']]
+        plt.rcParams['figure.figsize'] = [dimensions['figure_width'], dimensions['figure_height']]
 
+        # print('DEBUG: ',kwargs.get('background_colour'))                            #DEBUG
         fig = plt.figure(
-            figsize=[dimensions['width'], dimensions['height']],
+            figsize=[dimensions['figure_width'], dimensions['figure_height']],
             dpi=dimensions['dpi'],
             num=title,
+            facecolor=kwargs.get('background_colour', 'white'),
+            edgecolor=kwargs.get('background_colour', 'white')
             )
 
         ax = fig.add_subplot(111)
         ax.set_title(title)
+        ax.set_facecolor(kwargs.get('background_colour', 'white'))
+        for spine in ax.spines.values():
+            spine.set_edgecolor(kwargs.get('background_colour', 'white'))
 
         # assign date locator / formatter to the x-axis to get proper labels
         locator = mdates.AutoDateLocator(minticks=3)
@@ -149,7 +170,7 @@ def gantt_chart(df,
 
         return ax, fig
 
-    def add_extra_labels(df, label_column='milestone', **kwargs):
+    def add_bar_labels(df, label_column='milestone', **kwargs):
         """
         add extra labels to the middle of any bars from a given column.
         Feature included because of the need to understand some poorly planned data,
@@ -167,17 +188,19 @@ def gantt_chart(df,
         zorder = len(df)+10
         for row, event in df.iterrows():
             if event.end != event.start:
-                label_text = event.get(label_column)
-                xval = event.start + (event.end-event.start)/2
-                yval = row
-                if label_text not in (None, 'nan', 'None', ''):
-                    plt.text(
-                        xval, yval,
-                        f'{label_text:>5}',
-                        zorder=zorder,
-                        c='white',
-                        va='center',
-                        ha='center')
+                label_text = event.get(label_column, event.activity_name)
+                xval = mdates.date2num(event.start + (event.end-event.start)/2)
+                yval = event.yvalue
+                # print('DEBUG: ', label_text, xval, yval)
+                ax = plt.gca()
+                ax.annotate(
+                    text=label_text,
+                    xy=(xval, yval),
+                    zorder=zorder,
+                    c=kwargs.get('label_colour', 'white'),
+                    va='center',
+                    ha='center',
+                    fontsize=plt.rcParams['font.size']*0.6)
 
         return df
 
@@ -204,7 +227,7 @@ def gantt_chart(df,
         width = end - start
         x = start
         y = event.yvalue
-        height = 0.7
+        height = float(event.get('bar_size', 0.9))
         anchor = (x, y-height/2)
         fill_colour = event.get('fillcolour', kwargs.get('fill_colour', '#aaaaaa'))
         border_colour = event.get('bordercolour', kwargs.get('border_colour', None))
@@ -225,10 +248,18 @@ def gantt_chart(df,
                 height=0)
 
             # add a text label if possible
-            label_text = str(event.get('milestone', None))
-            if label_text not in (None, 'None', 'nan'):
-                # plt.text(x, y, f'{label_text:>6}'
-                plt.text(x, y+height/2, f'{label_text:^}')
+            label_text = event.get(
+                'label_text', event.get('activity_name', None)).replace('\\n', '\n')
+            # print('DEBUG: \n', label_text)
+            ax.annotate(
+                text=label_text,
+                # text='test\ntext',
+                xy=(x, y+height/2),
+                xytext=(x, y+height),
+                c=kwargs.get('label_colour', 'red'),
+                va='bottom',
+                ha='center',
+                fontsize=plt.rcParams['font.size']*0.5)
 
         # plot as a bar
         else:
@@ -414,6 +445,8 @@ def gantt_chart(df,
         ys = [max(df.yvalue)+1, min(df.yvalue)-1]
         ax.plot(xs, ys, color=nowline_colour, linestyle='--')
 
+    # MAIN FUNCTTION
+
     assertion_error = 'dataframe must have "activity_name", "start", and "end" columns as a minimum'
     assert all(x in df.columns for x in ['activity_name', 'start', 'end']), assertion_error
 
@@ -428,7 +461,7 @@ def gantt_chart(df,
     # iterate through events
     for row, event in df.iterrows():
         # create and add the shape
-        plot_event(event, ax)
+        plot_event(event, ax, **kwargs)
 
     # add a "now" line
     if nowline is True:
@@ -445,7 +478,7 @@ def gantt_chart(df,
                    **kwargs)
 
     # add extra labels from the milestone column
-    if extra_labels is True:
-        add_extra_labels(df, **kwargs)
+    if bar_labels is True:
+        add_bar_labels(df, **kwargs)
 
     return ax, fig
